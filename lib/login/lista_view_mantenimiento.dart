@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:conduent/login/serviceNotificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:conduent/login/login_view.dart';
@@ -388,6 +389,9 @@ void _detallada(String idIncidencia) async {
             bottom: 16.0,
             child: GestureDetector(
               onTap: _finalizar,
+
+              //onTap: showNotificacion1,
+
               child: Container(
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(

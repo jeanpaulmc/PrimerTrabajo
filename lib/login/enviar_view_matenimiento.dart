@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:conduent/login/serviceNotificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -387,6 +388,15 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
                       ),
                     ),
                     const SizedBox(height: 20),
+
+
+                     ElevatedButton(
+          onPressed: () {
+            // Aquí debemos mostrar la notificación
+            showNotificacion1();
+          },
+          child: const Text('Mostrar la notificación')),
+
                   ],
                 ),
         ),

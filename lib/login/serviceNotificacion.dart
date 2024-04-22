@@ -1,13 +1,11 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-// Instancia del package
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-// Este es el método que inicializa el objeto de notificaciones
 Future<void> initNotifications() async {
   const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@drawable/logodart');
+      AndroidInitializationSettings('icono_notificacion');
 
   const DarwinInitializationSettings initializationSettingsIOS =
       DarwinInitializationSettings();
@@ -20,7 +18,6 @@ Future<void> initNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
 
-// Este es el método que muestra la notificación
 Future<void> showNotificacion() async {
   const AndroidNotificationDetails androidNotificationDetails =
       AndroidNotificationDetails(
@@ -35,9 +32,31 @@ Future<void> showNotificacion() async {
   );
 
   await flutterLocalNotificationsPlugin.show(
-    1,
-    'Titulo de notificacion',
-    'Esta es una notificación de prueba para mostrar en el canal. Los quiero mucho.',
-    notificationDetails,
+      1,
+      'Recahazo de notificación de prueba',
+      'Esta es una notificación de prueba para mostrar en el canal. Los quiero mucho.',
+      notificationDetails);
+}
+Future<void> showNotificacion1() async {
+  
+  const AndroidNotificationDetails androidNotificationDetails =
+      AndroidNotificationDetails(
+    'your channel id',
+    'your channel name',
+     icon: "icono_notificacion",
+    importance: Importance.max,
+    priority: Priority.high,
+    enableVibration: true,
   );
+  
+  const NotificationDetails notificationDetails = NotificationDetails(
+    android: androidNotificationDetails,
+  );
+
+  await flutterLocalNotificationsPlugin.show(
+      1,
+      'Notificacion de Incidencia',
+      'Acaba de llegar una nueba incidencia nueva sin atender, porfavor ingrear a la aplicacion.',
+      notificationDetails);
+  print('notificacion enviada');
 }
