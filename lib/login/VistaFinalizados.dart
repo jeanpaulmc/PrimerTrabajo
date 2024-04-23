@@ -9,8 +9,14 @@ class VistaFinalizados extends StatefulWidget {
   final String nombreUsuario;
   final String userID;
   final UserData userData;
+  final String lastDate;
 
-  const VistaFinalizados({Key? key, required this.nombreUsuario, required this.userID, required this.userData}) : super(key: key);
+  const VistaFinalizados({Key? key, 
+  required this.nombreUsuario, 
+  required this.userID, 
+  required this.userData,
+  required this.lastDate,
+  }) : super(key: key);
 
   @override
   _VistaFinalizadosState createState() => _VistaFinalizadosState();
@@ -110,7 +116,8 @@ class _VistaFinalizadosState extends State<VistaFinalizados> {
         builder: (context) => VistaDetallada(
             idIncidencia: idIncidencia,
             nombreUsuario: widget.nombreUsuario,
-            userData: widget.userData
+            userData: widget.userData, 
+            lastDate: widget.lastDate,
         ),
       ),
     );
@@ -152,58 +159,64 @@ class _VistaFinalizadosState extends State<VistaFinalizados> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => seleccionarFechaInicio(context),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      backgroundColor: Colors.orange,
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Fecha de Inicio',
-                          style: TextStyle(fontSize: 15, color: Colors.white),
-                        ),
-                        Text(
-                          fechaInicio.toString().substring(0, 10),
-                          style: const TextStyle(fontSize: 15, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => seleccionarFechaTerminado(context),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      backgroundColor: Colors.orange,
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Fecha de Terminado',
-                          style: TextStyle(fontSize: 15, color: Colors.white),
-                        ),
-                        Text(
-                          fechaTerminado.toString().substring(0, 10),
-                          style: const TextStyle(fontSize: 15, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            SizedBox(height: 20),
+            Container(
+  margin: EdgeInsets.symmetric(horizontal: 20), 
+
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Expanded(
+        child: ElevatedButton(
+          onPressed: () => seleccionarFechaInicio(context),
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
+            backgroundColor: Colors.orange,
+          ),
+          child: Column(
+            children: [
+              const Text(
+                'Desde',
+                style: TextStyle(fontSize: 15, color: Colors.white),
+              ),
+              Text(
+                fechaInicio.toString().substring(0, 10),
+                style: const TextStyle(fontSize: 15, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Expanded(
+        child: ElevatedButton(
+          onPressed: () => seleccionarFechaTerminado(context),
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            backgroundColor: Colors.orange,
+          ),
+          child: Column(
+            children: [
+              const Text(
+                'Hasta',
+                style: TextStyle(fontSize: 15, color: Colors.white),
+              ),
+              Text(
+                fechaTerminado.toString().substring(0, 10),
+                style: const TextStyle(fontSize: 15, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
             SizedBox(height: 20),
             if (_fechasSeleccionadas)
               Expanded(

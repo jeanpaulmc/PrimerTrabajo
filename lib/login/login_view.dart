@@ -100,7 +100,7 @@ class _LoginViewState extends State<LoginView> {
           idSeccion: idSeccion,
         );
 
-        if (idTipoUsuario == '5' || idTipoUsuario == '6' || idTipoUsuario == '7') {
+        if (idTipoUsuario == '5' || idTipoUsuario == '6' || idTipoUsuario == '7'  ) {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -111,7 +111,8 @@ class _LoginViewState extends State<LoginView> {
               ),
             ),
           );
-        } else if (idTipoUsuario == '8') {
+          ///// CAMBIAR ADMIN  || idTipoUsuario == '1'
+        } else if (idTipoUsuario == '8' || idTipoUsuario == '1') {
           Navigator.push(
             context,
             MaterialPageRoute(

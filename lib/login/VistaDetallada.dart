@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:conduent/login/VistaReporte.dart';
 import 'package:conduent/login/login_view.dart';
+import 'package:conduent/login/serviceNotificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -9,35 +10,43 @@ class VistaDetallada extends StatefulWidget {
   final String idIncidencia;
   final String nombreUsuario;
   final UserData userData;
+  final String lastDate;
 
-  const VistaDetallada({Key? key, required this.idIncidencia, required this.nombreUsuario, required this.userData}) : super(key: key);
+  const VistaDetallada({Key? key, 
+  required this.idIncidencia, 
+  required this.nombreUsuario, 
+  required this.userData, 
+  required this.lastDate
+  }) : super(key: key);
 
   @override
   _VistaDetalladaState createState() => _VistaDetalladaState();
 }
 
 class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObserver {
+  late Timer _minuteTimer;
   late Timer _sessionTimer;
   late Map<String, dynamic> incidenciaData;
   late String estado;
   bool _isLoading = false;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(); // Modificación: Se agrega el GlobalKey
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(); 
   List<dynamic> historialAcciones = [];
 
   @override
   void initState() {
     super.initState();
     // Iniciar temporizador para actualizar sesión cada 2 minutos
-    _sessionTimer = Timer.periodic(const Duration(minutes: 2), (_) => updateLogin());
-
+    //_sessionTimer = Timer.periodic(const Duration(minutes: 2), (_) => updateLogin());
     obtenerDetalleIncidencia();
     obtenerHistorialAcciones();
+    consultarIncidenciaNueva();
     WidgetsBinding.instance.addObserver(this);
   }
 
   void dispose() {
     // Detener temporizador al cerrar el widget
     _sessionTimer.cancel();
+    _minuteTimer.cancel();
 
 
     WidgetsBinding.instance.removeObserver(this);
@@ -63,12 +72,16 @@ class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObse
         //enviarCerrarSeccion();
         break;
       case AppLifecycleState.paused:
-        // La aplicación está en primer plano y reanuda.
-        updateLogin();
+        _minuteTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+          updateLogin();
+          consultarIncidenciaNueva();
+        });
         break;
       case AppLifecycleState.resumed:
         // La aplicación está en primer plano y reanuda.
+         _minuteTimer.cancel();
         updateLogin();
+        consultarIncidenciaNueva();
         break;
 
 
@@ -91,8 +104,8 @@ class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObse
         body: jsonEncode({'idusuario': widget.userData.idUsuario}),
       );
 
-
       print('Tiempo sesion: ${response.body}');
+
 
 
       var data = json.decode(response.body);
@@ -185,6 +198,36 @@ class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObse
     }
   }
 
+   Future<void> consultarIncidenciaNueva() async {
+    try {
+      var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getIncidenciaNueva');
+      var response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'idusuario': widget.userData.idUsuario,
+          'lastdate': widget.lastDate,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        var cant = data['result'][0]['CANT'] as String;
+        if (cant == '0') {
+          print('El valor de "CANT" es 0');
+        } else {
+          print('El valor de "CANT" es $cant');
+          widget.lastDate = 
+           showNotificacion1();
+        }
+      } else {
+        print('Error al consultar la incidencia nueva: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error al consultar la incidencia nueva: $error');
+    }
+  }
+
 void activarReporte() {
   if (estado == '18') {
     Navigator.push(
@@ -232,6 +275,7 @@ Future<void> _updateEstado(String idIncidencia) async {
     obtenerDetalleIncidencia();
     obtenerHistorialAcciones();
 }
+
 
   Color getColorForStatus(String status) {
     switch (status) {
@@ -334,6 +378,7 @@ Future<void> _updateEstado(String idIncidencia) async {
                   color: getColorForStatus(incidenciaData['DESC_ESTADO']),
                 ),
               ),
+              
               Container(
                 margin: const EdgeInsets.symmetric(vertical: 10),
                 padding: const EdgeInsets.all(10),

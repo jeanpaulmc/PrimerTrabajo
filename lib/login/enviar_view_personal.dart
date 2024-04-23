@@ -11,24 +11,12 @@ import 'package:wakelock/wakelock.dart';
 
 
 
-
-
-
 class TipoEquipo {
   final String nombre;
   final String id;
 
-
-
-
   TipoEquipo({required this.nombre, required this.id});
 }
-
-
-
-
-
-
 
 
 class EnviarPersonal extends StatefulWidget {
@@ -814,9 +802,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
               },
               child: const Text('Aceptar'),
 
-
-
-
             )
           ],
         );
@@ -875,6 +860,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     );
   }
 }
+
 
 
 

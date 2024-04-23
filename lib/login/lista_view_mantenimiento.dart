@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:conduent/login/serviceNotificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:conduent/login/login_view.dart';
 import 'package:conduent/login/VistaDetallada.dart';
 import 'package:conduent/login/VistaFinalizados.dart';
+import 'package:intl/intl.dart';
 
 class ListaViewMantenimiento extends StatefulWidget {
   final String usuario;
@@ -37,6 +37,7 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
   int pendientesEnAtencion = 0;
   bool comando = false;
   bool _isLoading = false;
+  late String lastDate;
 
   @override
   void initState() {
@@ -175,18 +176,9 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
             pendientesEnAtencion++;
           }
         }
-
-        print('Pendientes sin atender: $pendientesSinAtender');
-        print('Pendientes en atención: $pendientesEnAtencion');
-
-        // Aquí agregamos la función para imprimir la fecha de la última incidencia con 'ULT_EST' == '15'
-        var ultimaIncidencia = _listaSinAtender
-            .where((incidencia) => incidencia['ULT_EST'] == '15')
-            .reduce((a, b) => a['FEC_ULT_EST_COMPLETO'].compareTo(b['FEC_ULT_EST_COMPLETO']) > 0 ? a : b);
-        print('Fecha de la última incidencia con EST 15: ${ultimaIncidencia['FEC_ULT_EST_COMPLETO']}');
-
         setState(() {
           _isLoading = false;
+          fechaParaApi();
         });
       } else {
         throw Exception('Failed to load incidencia options');
@@ -199,6 +191,29 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
     }
   }
 
+void fechaParaApi() async {
+      if (_listaSinAtender.isEmpty) {
+      // Obtener la fecha actual y formatearla como se requiere
+      var now = DateTime.now();
+      var formatter = DateFormat('dd/MM/yyyy 00:00:00');
+      lastDate = formatter.format(now);
+      print('fecha vacia $lastDate');
+      }else{
+      var ultimaIncidencia = _listaSinAtender.reduce((a, b) =>
+          a['FEC_ULT_EST_COMPLETO'].compareTo(b['FEC_ULT_EST_COMPLETO']) > 0 ? a : b);
+
+      // Obtener la fecha de la última incidencia en el formato requerido para la API
+      lastDate = ultimaIncidencia['FEC_ULT_EST_COMPLETO'];
+      print('fecha ultima  $lastDate');
+      }
+}
+
+
+  //actualizar pagina
+  void _actualizar() {
+    verIncidencia();
+  }
+  // Color de titulos
   Color getColorForStatus(String status) {
     switch (status) {
       case 'SIN RECEPCIONAR':
@@ -220,16 +235,13 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
       MaterialPageRoute(builder: (context) => VistaFinalizados(
         nombreUsuario: widget.userData.nombreUsuario,
         userID: widget.userData.idUsuario,
-        userData: widget.userData
+        userData: widget.userData,
+        lastDate: lastDate,
         )
       ),
     ).then((value) {
       verIncidencia();
     });
-  }
-
-  void _actualizar() {
-    verIncidencia();
   }
 
 void _detallada(String idIncidencia) async {
@@ -244,15 +256,13 @@ void _detallada(String idIncidencia) async {
         idIncidencia: idIncidencia,
         nombreUsuario: widget.userData.nombreUsuario,
         userData: widget.userData,
+        lastDate: lastDate,
       ),
     ),
   ).then((value) {
     verIncidencia();
   });
 }
-
-
-
 
   Future<void> _updateEstado(String idIncidencia) async {
     try {
@@ -265,11 +275,9 @@ void _detallada(String idIncidencia) async {
           'idincidencia': idIncidencia,
         }),
       );
-
       var data = json.decode(response.body);
       var estado = data['estado'];
       var msj = data['msj'];
-
       print('Estado de la actualización: $estado');
       print('Mensaje de la actualización: $msj');
     } catch (error) {
@@ -389,8 +397,6 @@ void _detallada(String idIncidencia) async {
             bottom: 16.0,
             child: GestureDetector(
               onTap: _finalizar,
-
-              //onTap: showNotificacion1,
 
               child: Container(
                 padding: const EdgeInsets.all(8.0),
