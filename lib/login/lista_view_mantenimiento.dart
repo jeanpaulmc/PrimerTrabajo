@@ -192,21 +192,32 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
   }
 
 void fechaParaApi() async {
-      if (_listaSinAtender.isEmpty) {
-      // Obtener la fecha actual y formatearla como se requiere
-      var now = DateTime.now();
-      var formatter = DateFormat('dd/MM/yyyy 00:00:00');
-      lastDate = formatter.format(now);
-      print('fecha vacia $lastDate');
-      }else{
-      var ultimaIncidencia = _listaSinAtender.reduce((a, b) =>
-          a['FEC_ULT_EST_COMPLETO'].compareTo(b['FEC_ULT_EST_COMPLETO']) > 0 ? a : b);
+  if (_listaSinAtender.isEmpty) {
+    // Obtener la fecha actual y formatearla como se requiere
+    var now = DateTime.now();
+    var formatter = DateFormat('dd/MM/yyyy 00:00:00');
+    lastDate = formatter.format(now);
+    print('fecha vacia $lastDate');
+  } else {
+    var incidenciasEstado15 =
+        _listaSinAtender.where((incidencia) => incidencia['descEstado'] == '15').toList();
 
-      // Obtener la fecha de la última incidencia en el formato requerido para la API
+    if (incidenciasEstado15.isNotEmpty) {
+      // Si hay incidencias con descEstado igual a '15', obtén la fecha de la última incidencia con ese estado
+      var ultimaIncidenciaEstado15 = incidenciasEstado15.reduce((a, b) =>
+          a['FEC_ULT_EST_COMPLETO'].compareTo(b['FEC_ULT_EST_COMPLETO']) > 0 ? a : b);
+      lastDate = ultimaIncidenciaEstado15['FEC_ULT_EST_COMPLETO'];
+      print('fecha ultima con estado 15: $lastDate');
+    } else {
+      // Si no hay incidencias con descEstado igual a '15', obtén la fecha de la última incidencia sin importar el estado
+      var ultimaIncidencia =
+          _listaSinAtender.reduce((a, b) => a['FEC_ULT_EST_COMPLETO'].compareTo(b['FEC_ULT_EST_COMPLETO']) > 0 ? a : b);
       lastDate = ultimaIncidencia['FEC_ULT_EST_COMPLETO'];
-      print('fecha ultima  $lastDate');
-      }
+      print('fecha ultima sin estado 15: $lastDate');
+    }
+  }
 }
+
 
 
   //actualizar pagina

@@ -12,6 +12,7 @@ class VistaDetallada extends StatefulWidget {
   final UserData userData;
   final String lastDate;
 
+
   const VistaDetallada({Key? key, 
   required this.idIncidencia, 
   required this.nombreUsuario, 
@@ -24,30 +25,32 @@ class VistaDetallada extends StatefulWidget {
 }
 
 class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObserver {
-  late Timer _minuteTimer;
   late Timer _sessionTimer;
+  late Timer _notificationTimer;
   late Map<String, dynamic> incidenciaData;
   late String estado;
   bool _isLoading = false;
+  late String fechafinal;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(); 
   List<dynamic> historialAcciones = [];
 
   @override
   void initState() {
     super.initState();
-    // Iniciar temporizador para actualizar sesión cada 2 minutos
-    //_sessionTimer = Timer.periodic(const Duration(minutes: 2), (_) => updateLogin());
+    _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) => updateLogin());
+    _notificationTimer = Timer.periodic(const Duration(minutes: 1), (_) => consultarIncidenciaNueva());
     obtenerDetalleIncidencia();
     obtenerHistorialAcciones();
+    fechafinal= widget.lastDate;
     consultarIncidenciaNueva();
+
     WidgetsBinding.instance.addObserver(this);
   }
 
   void dispose() {
     // Detener temporizador al cerrar el widget
     _sessionTimer.cancel();
-    _minuteTimer.cancel();
-
+    _notificationTimer.cancel();
 
     WidgetsBinding.instance.removeObserver(this);
     // Llamar a la función para registrar la salida de la sesión
@@ -72,18 +75,15 @@ class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObse
         //enviarCerrarSeccion();
         break;
       case AppLifecycleState.paused:
-        _minuteTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-          updateLogin();
-          consultarIncidenciaNueva();
-        });
+        // La aplicación está en primer plano y reanuda.
+        consultarIncidenciaNueva();
+        updateLogin();
         break;
       case AppLifecycleState.resumed:
         // La aplicación está en primer plano y reanuda.
-         _minuteTimer.cancel();
-        updateLogin();
         consultarIncidenciaNueva();
+        updateLogin();
         break;
-
 
       // Si estoy en el estado detached, cerrar la sesión, si no, actualizar la sesión
       case AppLifecycleState.detached:
@@ -103,19 +103,12 @@ class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObse
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'idusuario': widget.userData.idUsuario}),
       );
-
       print('Tiempo sesion: ${response.body}');
-
-
-
       var data = json.decode(response.body);
       var estado = data['estado'];
       var msj = data['msj'];
       var result = data['result'];
-
-
       print('Resultado Update Login: $result');
-
 
       switch (estado) {
         case 1:
@@ -153,7 +146,6 @@ class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObse
           'idincidencia': widget.idIncidencia,
         }),
       );
-
 
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
@@ -198,35 +190,44 @@ class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObse
     }
   }
 
-   Future<void> consultarIncidenciaNueva() async {
-    try {
-      var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getIncidenciaNueva');
-      var response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'idusuario': widget.userData.idUsuario,
-          'lastdate': widget.lastDate,
-        }),
-      );
+Future<void> consultarIncidenciaNueva() async {
+  try {
+    var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getIncidenciaNueva');
+    var response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'idusuario': widget.userData.idUsuario,
+        'lastdate': fechafinal,
+      }),
+    );
 
-      if (response.statusCode == 200) {
-        var data = json.decode(response.body);
-        var cant = data['result'][0]['CANT'] as String;
-        if (cant == '0') {
-          print('El valor de "CANT" es 0');
-        } else {
-          print('El valor de "CANT" es $cant');
-          widget.lastDate = 
-           showNotificacion1();
-        }
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body);
+      var cant = data['result'][0]['CANT'] as String;
+      var lastFec = data['result'][0]['LAST_FEC'] as String?;
+      if (cant == '0') {
+        print('El valor de "CANT" es 0');
+        print('La fecha es $lastFec');
       } else {
-        print('Error al consultar la incidencia nueva: ${response.statusCode}');
+        print('El valor de "CANT" $cant');
+        print('La fecha nueva $lastFec');
+        if (lastFec != null) {
+          // Actualizar el valor de lastDate
+          setState(() {
+            fechafinal = lastFec;
+          });
+        }
+        showNotificacion1();
       }
-    } catch (error) {
-      print('Error al consultar la incidencia nueva: $error');
+    } else {
+      print('Error al consultar la incidencia nueva: ${response.statusCode}');
     }
+  } catch (error) {
+    print('Error al consultar la incidencia nueva: $error');
   }
+}
+
 
 void activarReporte() {
   if (estado == '18') {
