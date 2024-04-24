@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:conduent/login/login_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -7,12 +8,14 @@ class VistaReporte extends StatefulWidget {
   final String nombreUsuario;
   final String idIncidencia;
   final String idUsuario;
+  final UserData userData;
 
   const VistaReporte({
     Key? key,
     required this.nombreUsuario,
     required this.idIncidencia,
     required this.idUsuario,
+    required this.userData,
   }) : super(key: key);
 
   @override
@@ -24,6 +27,7 @@ class _VistaReporteState extends State<VistaReporte> {
   String montoBilletes = '';
   String comentarios = '';
   bool _isButtonEnabled = false; 
+  late String fechafinal;
 
   @override
   void initState() {

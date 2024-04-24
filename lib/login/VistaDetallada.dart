@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:conduent/login/VistaReporte.dart';
 import 'package:conduent/login/login_view.dart';
-import 'package:conduent/login/serviceNotificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,126 +9,44 @@ class VistaDetallada extends StatefulWidget {
   final String idIncidencia;
   final String nombreUsuario;
   final UserData userData;
-  final String lastDate;
 
 
   const VistaDetallada({Key? key, 
   required this.idIncidencia, 
   required this.nombreUsuario, 
   required this.userData, 
-  required this.lastDate
   }) : super(key: key);
 
   @override
   _VistaDetalladaState createState() => _VistaDetalladaState();
 }
 
-class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObserver {
-  late Timer _sessionTimer;
-  late Timer _notificationTimer;
+class _VistaDetalladaState extends State<VistaDetallada> 
+with WidgetsBindingObserver {
   late Map<String, dynamic> incidenciaData;
   late String estado;
   bool _isLoading = false;
-  late String fechafinal;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(); 
   List<dynamic> historialAcciones = [];
 
   @override
   void initState() {
     super.initState();
-    _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) => updateLogin());
-    _notificationTimer = Timer.periodic(const Duration(minutes: 1), (_) => consultarIncidenciaNueva());
     obtenerDetalleIncidencia();
     obtenerHistorialAcciones();
-    fechafinal= widget.lastDate;
-    consultarIncidenciaNueva();
+
 
     WidgetsBinding.instance.addObserver(this);
   }
 
   void dispose() {
     // Detener temporizador al cerrar el widget
-    _sessionTimer.cancel();
-    _notificationTimer.cancel();
-
     WidgetsBinding.instance.removeObserver(this);
-    // Llamar a la función para registrar la salida de la sesión
-    //enviarCerrarSeccion();
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    print('State: $state');
-    super.didChangeAppLifecycleState(state);
-    switch (state) {
-      case AppLifecycleState.inactive:
-        // La aplicación está en un estado inactivo, como cuando se interrumpe una llamada telefónica.
-        //enviarCerrarSeccion();
-        //updateLogin();
-        break;
-      case AppLifecycleState.hidden:
-        // La aplicación está pausada, generalmente ocurre cuando la aplicación se envía a segundo plano.
-        // Puedes llamar a enviarCerrarSeccion() aquí si lo deseas.
-        //updateLogin();
-        //enviarCerrarSeccion();
-        break;
-      case AppLifecycleState.paused:
-        // La aplicación está en primer plano y reanuda.
-        consultarIncidenciaNueva();
-        updateLogin();
-        break;
-      case AppLifecycleState.resumed:
-        // La aplicación está en primer plano y reanuda.
-        consultarIncidenciaNueva();
-        updateLogin();
-        break;
 
-      // Si estoy en el estado detached, cerrar la sesión, si no, actualizar la sesión
-      case AppLifecycleState.detached:
-        // La aplicación está completamente cerrada.
-        //enviarCerrarSeccion();
-        break;
-    }
-  }
-  // Funcion para update Login
-  // Api07
-  Future<void> updateLogin() async {
-    try {
-      var url = Uri.parse(
-          'http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/updateLogin');
-      var response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'idusuario': widget.userData.idUsuario}),
-      );
-      print('Tiempo sesion: ${response.body}');
-      var data = json.decode(response.body);
-      var estado = data['estado'];
-      var msj = data['msj'];
-      var result = data['result'];
-      print('Resultado Update Login: $result');
-
-      switch (estado) {
-        case 1:
-          print('Sesión actualizada');
-          break;
-        case 0:
-          mostrarError(msj);
-          break;
-        case -1:
-          mostrarError(msj);
-          break;
-        case -2:
-          mostrarError(msj);
-          break;
-        default:
-          break;
-      }
-    } catch (error) {
-      print('Error al cerrar sesión: $error');
-    }
-  }
+  
 
 //Api para obtener datos de inciendia al iniciar
   Future<void> obtenerDetalleIncidencia() async {
@@ -190,44 +107,6 @@ class _VistaDetalladaState extends State<VistaDetallada> with WidgetsBindingObse
     }
   }
 
-Future<void> consultarIncidenciaNueva() async {
-  try {
-    var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getIncidenciaNueva');
-    var response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'idusuario': widget.userData.idUsuario,
-        'lastdate': fechafinal,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      var data = json.decode(response.body);
-      var cant = data['result'][0]['CANT'] as String;
-      var lastFec = data['result'][0]['LAST_FEC'] as String?;
-      if (cant == '0') {
-        print('El valor de "CANT" es 0');
-        print('La fecha es $lastFec');
-      } else {
-        print('El valor de "CANT" $cant');
-        print('La fecha nueva $lastFec');
-        if (lastFec != null) {
-          // Actualizar el valor de lastDate
-          setState(() {
-            fechafinal = lastFec;
-          });
-        }
-        showNotificacion1();
-      }
-    } else {
-      print('Error al consultar la incidencia nueva: ${response.statusCode}');
-    }
-  } catch (error) {
-    print('Error al consultar la incidencia nueva: $error');
-  }
-}
-
 
 void activarReporte() {
   if (estado == '18') {
@@ -237,6 +116,7 @@ void activarReporte() {
         nombreUsuario: widget.userData.nombreUsuario, 
         idUsuario: widget.userData.idUsuario,
         idIncidencia: widget.idIncidencia,
+        userData: widget.userData,
       )),
     ).then((value) {
       obtenerDetalleIncidencia();
@@ -270,8 +150,9 @@ Future<void> _updateEstado(String idIncidencia) async {
 
     print('Estado de la actualización: $estado');
     print('Mensaje de la actualización: $msj');
+
   } catch (error) {
-    print('Error al realizar algo especial: $error');
+    print('Estado de la actualización: $estado');
   }
     obtenerDetalleIncidencia();
     obtenerHistorialAcciones();

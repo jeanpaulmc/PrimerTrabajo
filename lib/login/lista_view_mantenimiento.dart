@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:conduent/login/serviceNotificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:conduent/login/login_view.dart';
@@ -30,7 +31,7 @@ class ListaViewMantenimiento extends StatefulWidget {
 class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with WidgetsBindingObserver {
   
   late Timer _sessionTimer;
-
+  late Timer _notificationTimer;
   List<Map<String, dynamic>> _listaSinAtender = [];
   List<Map<String, dynamic>> _listaEnAtencion = [];
   int pendientesSinAtender = 0;
@@ -38,12 +39,15 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
   bool comando = false;
   bool _isLoading = false;
   late String lastDate;
+  //late String fechafin;
 
   @override
   void initState() {
     super.initState();
-    _sessionTimer = Timer.periodic(const Duration(minutes: 2), (_) => updateLogin());
+    _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) => updateLogin());
+    _notificationTimer = Timer.periodic(const Duration(minutes: 1), (_) => consultarIncidenciaNueva());
     verIncidencia();
+
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -76,6 +80,46 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
         break;
     }
   }
+
+
+  Future<void> consultarIncidenciaNueva() async {
+  try {
+    var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getIncidenciaNueva');
+    var response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'idusuario': widget.userData.idUsuario,
+        'lastdate': lastDate,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body);
+      var cant = data['result'][0]['CANT'] as String;
+      var lastFec = data['result'][0]['LAST_FEC'] as String?;
+      if (cant == '0') {
+        print('El valor de "CANT" es 0');
+        print('La fecha es $lastFec');
+      } else {
+        print('El valor de "CANT" $cant');
+        print('La fecha nueva $lastFec');
+        if (lastFec != null) {
+          // Actualizar el valor de lastDate
+          setState(() {
+          });
+        }
+        showNotificacion1();
+        verIncidencia();
+        lastDate = lastFec!;
+      }
+    } else {
+      print('Error al consultar la incidencia nueva: ${response.statusCode}');
+    }
+  } catch (error) {
+    print('Error al consultar: $error');
+  }
+}
 
   Future<void> updateLogin() async {
     try {
@@ -247,7 +291,6 @@ void fechaParaApi() async {
         nombreUsuario: widget.userData.nombreUsuario,
         userID: widget.userData.idUsuario,
         userData: widget.userData,
-        lastDate: lastDate,
         )
       ),
     ).then((value) {
@@ -267,7 +310,6 @@ void _detallada(String idIncidencia) async {
         idIncidencia: idIncidencia,
         nombreUsuario: widget.userData.nombreUsuario,
         userData: widget.userData,
-        lastDate: lastDate,
       ),
     ),
   ).then((value) {

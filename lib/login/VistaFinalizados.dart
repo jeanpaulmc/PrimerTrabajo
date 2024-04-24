@@ -9,13 +9,11 @@ class VistaFinalizados extends StatefulWidget {
   final String nombreUsuario;
   final String userID;
   final UserData userData;
-  final String lastDate;
 
   const VistaFinalizados({Key? key, 
   required this.nombreUsuario, 
   required this.userID, 
   required this.userData,
-  required this.lastDate,
   }) : super(key: key);
 
   @override
@@ -117,7 +115,6 @@ class _VistaFinalizadosState extends State<VistaFinalizados> {
             idIncidencia: idIncidencia,
             nombreUsuario: widget.nombreUsuario,
             userData: widget.userData, 
-            lastDate: widget.lastDate,
         ),
       ),
     );

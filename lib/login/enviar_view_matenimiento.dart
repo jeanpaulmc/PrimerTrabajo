@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:conduent/login/serviceNotificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -42,8 +41,6 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
   @override
   void initState() {
     super.initState();
-    _sessionTimer =
-        Timer.periodic(const Duration(minutes: 2), (_) => updateLogin());
     verTramo();
     WidgetsBinding.instance.addObserver(this);
   }
@@ -52,60 +49,6 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
     _sessionTimer.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    switch (state) {
-      case AppLifecycleState.inactive:
-        break;
-      case AppLifecycleState.hidden:
-        break;
-      case AppLifecycleState.paused:
-        updateLogin();
-        break;
-      case AppLifecycleState.resumed:
-        updateLogin();
-        break;
-      case AppLifecycleState.detached:
-        break;
-    }
-  }
-
-  Future<void> updateLogin() async {
-    try {
-      var url = Uri.parse(
-          'http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/updateLogin');
-      var response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'idusuario': widget.userData.idUsuario}),
-      );
-
-      var data = json.decode(response.body);
-      var estado = data['estado'];
-      var msj = data['msj'];
-
-      switch (estado) {
-        case 1:
-          print('Sesión actualizada');
-          break;
-        case 0:
-          mostrarError(msj);
-          break;
-        case -1:
-          mostrarError(msj);
-          break;
-        case -2:
-          mostrarError(msj);
-          break;
-        default:
-          break;
-      }
-    } catch (error) {
-      print('Error al cerrar sesión: $error');
-    }
   }
 
   void verTramo() async {
@@ -388,14 +331,6 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
                       ),
                     ),
                     const SizedBox(height: 20),
-
-
-                     ElevatedButton(
-          onPressed: () {
-            // Aquí debemos mostrar la notificación
-            showNotificacion1();
-          },
-          child: const Text('Mostrar la notificación')),
 
                   ],
                 ),
