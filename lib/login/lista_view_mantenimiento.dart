@@ -39,7 +39,6 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
   bool comando = false;
   bool _isLoading = false;
   late String lastDate;
-  //late String fechafin;
 
   @override
   void initState() {
@@ -71,9 +70,11 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
         break;
       case AppLifecycleState.paused:
         updateLogin();
+        consultarIncidenciaNueva();
         break;
       case AppLifecycleState.resumed:
         updateLogin();
+        consultarIncidenciaNueva();
         break;
       case AppLifecycleState.detached:
         //enviarCerrarSeccion();
@@ -261,8 +262,6 @@ void fechaParaApi() async {
     }
   }
 }
-
-
 
   //actualizar pagina
   void _actualizar() {
@@ -527,7 +526,7 @@ void _detallada(String idIncidencia) async {
                           ],
                         ),
                         Text(
-                          'Incidencia: ${incidencia['DESCRIPCION']}',
+                          'Incidencia: ${incidencia['DESCRIPCION']}'
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -538,6 +537,8 @@ void _detallada(String idIncidencia) async {
                             ),
                           ],
                         ),
+                        //fecha de diferencia
+                        //Text('Fecha de diferencia',),
                       ],
                     ),
                   ),

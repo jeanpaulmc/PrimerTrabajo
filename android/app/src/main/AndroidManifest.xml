@@ -2,8 +2,10 @@
     
     <!-- Añade esta línea para permitir que la aplicación acceda a Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
+     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    
     
     <application
         android:label="conduent"

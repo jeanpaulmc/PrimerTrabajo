@@ -11,12 +11,24 @@ import 'package:wakelock/wakelock.dart';
 
 
 
+
+
+
 class TipoEquipo {
   final String nombre;
   final String id;
 
+
+
+
   TipoEquipo({required this.nombre, required this.id});
 }
+
+
+
+
+
+
 
 
 class EnviarPersonal extends StatefulWidget {
@@ -113,6 +125,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }
 
 
+
+
   void _updateLoginIfNeeded() {
     if (_screenIsOn) {
       // La pantalla está encendida, realiza las acciones necesarias
@@ -141,7 +155,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         // La aplicación está en segundo plano o en estado de pausa, continúa actualizando el inicio de sesión cada 2 minutos
         _screenIsOn = true;
         _updateLoginIfNeeded();
-        _startSessionTimer();
+        _startSessionTimer(); // Aquí se vuelve a iniciar el temporizador
         break;
       case AppLifecycleState.resumed:
         // Se reanuda la aplicación, comienza a actualizar el inicio de sesión cada 2 minutos hasta que cambie de estado nuevamente
@@ -802,6 +816,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
               },
               child: const Text('Aceptar'),
 
+
+
+
             )
           ],
         );
@@ -860,9 +877,4 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     );
   }
 }
-
-
-
-
-
 

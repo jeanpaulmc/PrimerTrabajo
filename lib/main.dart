@@ -3,12 +3,15 @@
   import 'package:get/get.dart';
   import 'package:flutter/services.dart';
 
+
   import 'package:conduent/login/login_view.dart';
   import 'package:conduent/router/router.dart';
+
 
   void main() {
     runApp(const MyApp());
     DependencyInjection.init();
+
 
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -17,8 +20,11 @@
   }
 
 
+
+
   class MyApp extends StatelessWidget {
     const MyApp({Key? key});
+
 
     @override
     Widget build(BuildContext context) {
@@ -32,3 +38,6 @@
       );
     }
   }
+
+
+

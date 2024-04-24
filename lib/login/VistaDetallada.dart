@@ -347,6 +347,61 @@ Future<void> _updateEstado(String idIncidencia) async {
                   ],
                 ),
               ),
+
+              if (estado == '19')
+Container(
+  margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+  padding: const EdgeInsets.all(10),
+  decoration: BoxDecoration(
+    color: Colors.grey[200],
+    borderRadius: BorderRadius.circular(10),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      const Text(
+        'Reporte de Incidencia',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 18, // Tamaño del texto del título
+        ),
+      ),
+      const SizedBox(height: 4), // Espacio entre los textos
+      Row(
+        children: [
+          const Text(
+            'Monedas: ',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text('${incidenciaData['MNT_MONEDAS']}'),
+        ],
+      ),
+      Row(
+        children: [
+          const Text(
+            'Billetes: ',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text('${incidenciaData['MNT_BILLETES']}'),
+        ],
+      ),
+      const SizedBox(height: 4), // Espacio entre los textos
+      const Text(
+        'Comentario',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      Text('${incidenciaData['COMENTARIOS']}'),
+    ],
+  ),
+),
+
               const SizedBox(height: 20),
               const Text('Historial de acciones', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
