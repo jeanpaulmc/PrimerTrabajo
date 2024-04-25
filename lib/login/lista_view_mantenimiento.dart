@@ -30,10 +30,13 @@ class ListaViewMantenimiento extends StatefulWidget {
 }
 
 class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with WidgetsBindingObserver {
+  // Crear un controlador para el campo de texto del emplazamiento
+  late Timer _sessionTimer;
+  
+  // Inicialmente asumimos que la pantalla está encendida
   bool _screenIsOn = true;
 
-  late Timer _sessionTimer;
-  late Timer _notificationTimer;
+
   List<Map<String, dynamic>> _listaSinAtender = [];
   List<Map<String, dynamic>> _listaEnAtencion = [];
   int pendientesSinAtender = 0;
@@ -49,7 +52,6 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
     Wakelock.enable();
 
     verIncidencia();
-
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -59,42 +61,47 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
     super.dispose();
   }
 
-    void _startSessionTimer() {
+  void _startSessionTimer() {
     _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       _updateLoginIfNeeded();
     });
   }
 
-    void _updateLoginIfNeeded() {
+  void _updateLoginIfNeeded() {
     if (_screenIsOn) {
       // La pantalla está encendida, realiza las acciones necesarias
       updateLogin();
-      consultarIncidenciaNueva();
     }
   }
+
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.inactive:
-        //enviarCerrarSeccion();
-        //updateLogin();
-        break;
-      case AppLifecycleState.hidden:
-        //updateLogin();
-        //enviarCerrarSeccion();
-        break;
-      case AppLifecycleState.paused:
+        _screenIsOn = true;
         _updateLoginIfNeeded();
         _startSessionTimer();
         break;
+      case AppLifecycleState.hidden:
+        _screenIsOn = true;
+        _updateLoginIfNeeded();
+        _startSessionTimer();
+        break;
+      case AppLifecycleState.paused:
+        // La aplicación está en segundo plano o en estado de pausa, continúa actualizando el inicio de sesión cada 2 minutos
+        _screenIsOn = true;
+        _updateLoginIfNeeded();
+        _startSessionTimer(); // Aquí se vuelve a iniciar el temporizador
+        break;
       case AppLifecycleState.resumed:
+        // Se reanuda la aplicación, comienza a actualizar el inicio de sesión cada 2 minutos hasta que cambie de estado nuevamente
+        _screenIsOn = true;
         _updateLoginIfNeeded();
         _startSessionTimer();
         break;
       case AppLifecycleState.detached:
-        //enviarCerrarSeccion();
         break;
     }
   }
@@ -155,7 +162,10 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
       var estado = data['estado'];
       var msj = data['msj'];
       var result = data['result'];
+      var idsession = data['idsession'];
 
+      print('Aca idsession: ${idsession}');
+      
       print('Resultado Update Login: $result');
 
       switch (estado) {
