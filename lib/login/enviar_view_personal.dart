@@ -119,7 +119,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
 
 
   void _startSessionTimer() {
-    _sessionTimer = Timer.periodic(const Duration(minutes: 2), (_) {
+    _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       _updateLoginIfNeeded();
     });
   }
@@ -476,7 +476,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       var response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'idusuario': widget.userData.idUsuario}),
+        body: jsonEncode({'idsession': widget.userData.idSeccion}),
       );
 
 
@@ -491,8 +491,10 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       var estado = data['estado'];
       var msj = data['msj'];
       var result = data['result'];
+      var idsession = data['idsession'];
 
 
+      print('Aca idsession: ${idsession}');
 
 
       print('Resultado Update Login: $result');

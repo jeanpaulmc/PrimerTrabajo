@@ -7,6 +7,7 @@ import 'package:conduent/login/login_view.dart';
 import 'package:conduent/login/VistaDetallada.dart';
 import 'package:conduent/login/VistaFinalizados.dart';
 import 'package:intl/intl.dart';
+import 'package:wakelock/wakelock.dart';
 
 class ListaViewMantenimiento extends StatefulWidget {
   final String usuario;
@@ -29,7 +30,8 @@ class ListaViewMantenimiento extends StatefulWidget {
 }
 
 class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with WidgetsBindingObserver {
-  
+  bool _screenIsOn = true;
+
   late Timer _sessionTimer;
   late Timer _notificationTimer;
   List<Map<String, dynamic>> _listaSinAtender = [];
@@ -43,8 +45,9 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
   @override
   void initState() {
     super.initState();
-    _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) => updateLogin());
-    _notificationTimer = Timer.periodic(const Duration(minutes: 1), (_) => consultarIncidenciaNueva());
+    _startSessionTimer();
+    Wakelock.enable();
+
     verIncidencia();
 
     WidgetsBinding.instance.addObserver(this);
@@ -54,6 +57,20 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
     _sessionTimer.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+    void _startSessionTimer() {
+    _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      _updateLoginIfNeeded();
+    });
+  }
+
+    void _updateLoginIfNeeded() {
+    if (_screenIsOn) {
+      // La pantalla está encendida, realiza las acciones necesarias
+      updateLogin();
+      consultarIncidenciaNueva();
+    }
   }
 
   @override
@@ -69,12 +86,12 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
         //enviarCerrarSeccion();
         break;
       case AppLifecycleState.paused:
-        updateLogin();
-        consultarIncidenciaNueva();
+        _updateLoginIfNeeded();
+        _startSessionTimer();
         break;
       case AppLifecycleState.resumed:
-        updateLogin();
-        consultarIncidenciaNueva();
+        _updateLoginIfNeeded();
+        _startSessionTimer();
         break;
       case AppLifecycleState.detached:
         //enviarCerrarSeccion();
@@ -129,7 +146,7 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
       var response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'idusuario': widget.userData.idUsuario}),
+        body: jsonEncode({'idsession': widget.userData.idSeccion}),
       );
 
       print('Tiempo sesion: ${response.body}');
@@ -278,6 +295,22 @@ void fechaParaApi() async {
         return Colors.blueGrey;
       case 'ATENDIDO':
         return Colors.green;
+      default:
+        return Colors.black;
+    }
+  }
+
+    // Color de alertas
+  Color getColorAlerts(String tiempo) {
+    switch (tiempo) {
+      case '30':
+        return Colors.orange;
+      case '60':
+        return Colors.red;
+      case '120':
+        return Colors.purple;
+      case '0':
+        return Colors.purple;
       default:
         return Colors.black;
     }
@@ -490,6 +523,8 @@ void _detallada(String idIncidencia) async {
           children: incidencias.map((incidencia) {
             var status = incidencia['DESC_ESTADO'];
             var textColor = getColorForStatus(status);
+            var tiempo = incidencia['TIEMPO_SIN_ATENDER'];
+            var alerColor = getColorAlerts(tiempo);
             return GestureDetector(
               onTap: () => _detallada(incidencia['ID_INCIDENCIA']),
 
@@ -537,8 +572,32 @@ void _detallada(String idIncidencia) async {
                             ),
                           ],
                         ),
-                        //fecha de diferencia
-                        //Text('Fecha de diferencia',),
+
+                        //Alerta de tiempo
+                      if (status == 'SIN RECEPCIONAR' && incidencia['TIEMPO_SIN_ATENDER'] != '0')
+                        Container(
+                      
+                          width: double.infinity, 
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                decoration: BoxDecoration(
+                                  color: alerColor,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Text(
+                                  '> ${incidencia['TIEMPO_SIN_ATENDER']} minutos',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
