@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:conduent/login/enviar_view_matenimiento.dart';
 import 'package:conduent/login/enviar_view_personal.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_activity_recognition/flutter_activity_recognition.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -14,7 +20,6 @@ class LoginView extends StatefulWidget {
   State<LoginView> createState() => _LoginViewState();
 
   static of(Element loginViewContext) {}
-
 }
 
 class UserData {
@@ -22,15 +27,135 @@ class UserData {
   final String nombreUsuario;
   final String idSeccion;
 
-  UserData({required this.idUsuario, required this.nombreUsuario, required this.idSeccion});
+  UserData({
+    required this.idUsuario,
+    required this.nombreUsuario,
+    required this.idSeccion,
+  });
 }
 
 class _LoginViewState extends State<LoginView> {
   TextEditingController usuario = TextEditingController();
   TextEditingController contrasenia = TextEditingController();
   bool _isSecurePassword = true;
+  late FlutterActivityRecognition activityRecognition;
+  late StreamSubscription<Activity> _activityStreamSubscription;
 
-  //Api01
+  @override
+  void initState() {
+    super.initState();
+    _requestPermissionsOnFirstRun();
+    activityRecognition = FlutterActivityRecognition.instance;
+    _subscribeToActivityStream();
+  }
+
+  void _requestPermissionsOnFirstRun() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isFirstRun = prefs.getBool('isFirstRun') ?? true;
+
+    if (isFirstRun) {
+      await _requestBackgroundActivityPermission();
+      await _requestNotificationPermission();
+      await prefs.setBool('isFirstRun', false);
+    }
+  }
+
+  Future<bool> isPermissionGrants(Permission permission) async {
+    PermissionStatus status = await permission.status;
+    if (status == PermissionStatus.permanentlyDenied) {
+      debugPrint('Permission is permanently denied.');
+      return false;
+    } else if (status != PermissionStatus.granted) {
+      PermissionStatus newStatus = await permission.request();
+      if (newStatus != PermissionStatus.granted) {
+        debugPrint('Permission is denied.');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  Future<void> _requestBackgroundActivityPermission() async {
+    bool isPermissionGranted = await isPermissionGrants(Permission.activityRecognition);
+    if (!isPermissionGranted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Permitir actividad en segundo plano'),
+            content: Text('¿Desea permitir que la aplicación acceda a la actividad en segundo plano?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('No'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await isPermissionGrants(Permission.activityRecognition);
+                  Navigator.of(context).pop();
+                },
+                child: Text('Sí'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    bool isPermissionGranted = await isPermissionGrants(Permission.notification);
+    if (!isPermissionGranted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Permitir notificaciones'),
+            content: Text('¿Desea permitir que la aplicación envíe notificaciones?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('No'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await isPermissionGrants(Permission.notification);
+                  Navigator.of(context).pop();
+                },
+                child: Text('Sí'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  void _subscribeToActivityStream() {
+    _activityStreamSubscription = activityRecognition.activityStream
+      .handleError(_handleError)
+      .listen(_onActivityReceive);
+  }
+
+  void _handleError(Object error) {
+    debugPrint('Error on activity stream: $error');
+  }
+
+  void _onActivityReceive(Activity activity) {
+    debugPrint('Activity received: ${activity.type}');
+    // Handle received activity here
+  }
+
+  @override
+  void dispose() {
+    _activityStreamSubscription.cancel();
+    super.dispose();
+  }
+
   void ingresar() async {
     showDialog(
       context: context,
@@ -93,14 +218,13 @@ class _LoginViewState extends State<LoginView> {
 
         print('Response Incio Seccion Login: ${response.body}');
 
-
         UserData userData = UserData(
           idUsuario: idUsuario,
           nombreUsuario: nombreUsuario,
           idSeccion: idSeccion,
         );
 
-        if (idTipoUsuario == '5' || idTipoUsuario == '6' || idTipoUsuario == '7'  ) {
+        if (idTipoUsuario == '5' || idTipoUsuario == '6' || idTipoUsuario == '7') {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -135,25 +259,24 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void mostrarError(String mensaje) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Error'),
-        content: Text(mensaje),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Aceptar'),
-          )
-        ],
-      );
-    },
-  );
-}
-
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(mensaje),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Aceptar'),
+            )
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,14 +298,14 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 Container(
                   margin: EdgeInsets.only(
-                  top: AppBar().preferredSize.height + 15,
-                  bottom: 5,
+                    top: AppBar().preferredSize.height + 15,
+                    bottom: 5,
                   ),
                   child: AppBar(
                     title: const Text('Bienvenido al registro de seguimiento', style: TextStyle(fontSize: 20)),
                   ),
                 ),
-                SizedBox(height: 15), 
+                SizedBox(height: 15),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   decoration: BoxDecoration(

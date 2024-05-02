@@ -6,20 +6,28 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 
+
+
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
+
 
 class TipoEquipo {
   final String nombre;
   final String id;
 
+
   TipoEquipo({required this.nombre, required this.id});
 }
+
 
 class EnviarPersonal extends StatefulWidget {
   final String usuario;
   final String contrasenia;
   final UserData userData;
+
+
+
 
 
 
@@ -33,9 +41,17 @@ class EnviarPersonal extends StatefulWidget {
 
 
 
+
+
+
+
   @override
   _EnviarPersonalState createState() => _EnviarPersonalState();
 }
+
+
+
+
 
 
 
@@ -49,8 +65,11 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   bool _screenIsOn = true;
 
 
+
+
   List<TipoEquipo> equipoOptions = [];
   List<TipoEquipo> nombreIncidencia = [];
+
 
   String? selectedEquipoId;
   TextEditingController emplazamientoController = TextEditingController();
@@ -61,8 +80,16 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
 
 
 
+
+
+
+
   String? IdEmplazamiento;
   String? estadoEmplazamiento;
+
+
+
+
 
 
 
@@ -71,7 +98,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   void initState() {
     super.initState();
 
+
     _startSessionTimer();
+
 
     Wakelock.enable(); // Mantener la pantalla encendida
     // Llamar a la función para ver el tipo de equipo
@@ -80,10 +109,11 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     WidgetsBinding.instance.addObserver(this);
   }
 
+
   void dispose() {
     // Detener temporizador al cerrar el widget
     _sessionTimer.cancel();
-    
+   
     WidgetsBinding.instance.removeObserver(this);
     emplazamientoController.dispose();
     // Llamar a la función para registrar la salida de la sesión
@@ -92,11 +122,14 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }
 
 
+
+
   void _startSessionTimer() {
     _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       _updateLoginIfNeeded();
     });
   }
+
 
   void _updateLoginIfNeeded() {
     if (_screenIsOn) {
@@ -104,6 +137,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       updateLogin();
     }
   }
+
+
 
 
   @override
@@ -140,6 +175,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }
 
 
+
+
   /*
   @override
   void initState() {
@@ -149,16 +186,22 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }*/
 
 
+
+
   void _verificarCondiciones() {
     bool condicionesCumplidas = selectedEquipoId != null &&
         selectedIncidenciaId != null &&
         emplazamientoController.text.split(' ').any((word) => word.length >= 4);
 
 
+
+
     setState(() {
       seccionHabilitada = condicionesCumplidas;
     });
   }
+
+
 
 
   // Función para ver el tipo de equip
@@ -176,9 +219,13 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       );
 
 
+
+
       print('Response Equipo: ${response.body}');
       print('Id Usuario aca: ${widget.userData.idUsuario}');
       print('Id Seccion aca: ${widget.userData.idSeccion}');
+
+
 
 
       if (response.statusCode == 200) {
@@ -200,6 +247,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }
 
 
+
+
   // Función para verificar el emplazamiento
   // Api04
   Future<void> verEmplazamineto() async {
@@ -209,6 +258,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         mostrarError('Por favor, ingrese un emplazamiento');
         return;
       }
+
+
 
 
       var url = Uri.parse(
@@ -225,13 +276,18 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       );
 
 
+
+
       print('Response Emplazamiento: ${response.body}');
+
+
 
 
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         estadoEmplazamiento = data['estado'];
         print('Estado: $estadoEmplazamiento');
+
 
         switch (estadoEmplazamiento) {
           case "-1":
@@ -261,6 +317,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
 
 
 
+
+
+
   // Función para ver el tipo de incidencia
   // Api03
   Future<void> verIncidencia() async {
@@ -280,6 +339,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
 
 
 
+
+
+
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         setState(() {
@@ -290,6 +352,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
               )));
           nombreIncidencia = incidenciaOptions;
           List<String> nombresInci = nombreIncidencia.map((equipo) => equipo.nombre).toList();
+
+
 
 
         });
@@ -303,6 +367,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       mostrarError('No hay conexión con el servidor');
     }
   }
+
+
 
 
   // Función para enviar el registro de la incidencia
@@ -325,6 +391,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
           }),
         );
 
+
         print('Response enviar Registro Incidencia: ${response.body}');
         var data = json.decode(response.body);
         var estado = data['estado'];
@@ -344,6 +411,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     }
   }
 
+
   // Función para cerrar la sesión
   // Api06
   Future<void> enviarCerrarSeccion() async {
@@ -360,14 +428,18 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         }),
       );
 
+
       print('Response Cerrar Seccion Login: ${response.body}');
+
 
       var data = json.decode(response.body);
       var estado = data['estado'];
       var msj = data['msj'];
       var result = data['result'];
 
+
       print('Resultado 2: $result');
+
 
       switch (estado) {
         case 1:
@@ -395,6 +467,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }
 
 
+
+
   // Funcion para update Login
   // Api07
   Future<void> updateLogin() async {
@@ -407,7 +481,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         body: jsonEncode({'idsession': widget.userData.idSeccion}),
       );
 
+
       print('Tiempo sesion: ${response.body}');
+
 
       var data = json.decode(response.body);
       var estado = data['estado'];
@@ -416,10 +492,16 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       var idsession = data['idsession'];
 
 
+
+
       print('Aca idsession: ${idsession}');
 
 
+
+
       print('Resultado Update Login: $result');
+
+
 
 
       switch (estado) {
@@ -442,6 +524,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       print('Error al cerrar sesión: $error');
     }
   }
+
+
 
 
   @override
@@ -472,6 +556,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         ),
       ) ?? false;
     },
+
+
 
 
     child: Scaffold(
@@ -509,6 +595,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
 
 
 
+
+
+
                 const SizedBox(height: 20),
                 // Selección de tipo de Equipo
                 const Text('1.- Tipo de Equipo'),
@@ -536,6 +625,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                           selectedIncidenciaId = null;
                           verIncidencia();
                         });
+
 
                       },
                       items: [
@@ -565,6 +655,14 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
 
 
 
+
+
+
+
+
+
+
+
                 const SizedBox(height: 20),
                 // Selecionar Tipo Incidencia
                 const Text('2.- Tipo de Incidencia'),
@@ -578,6 +676,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Autocomplete<String>(
+                     
                       optionsBuilder: (TextEditingValue textEditingValue) {
                         // Filtrar las opciones según lo que se haya escrito en el campo de texto
                         return incidenciaOptions
@@ -595,11 +694,35 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                               .id;
                         });
                         verIncidencia();
-
                       },
+                      // Decoración para el campo de autocompletado
+                      fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                        return TextField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          onEditingComplete: onEditingComplete,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 13),
+                          decoration: InputDecoration(
+                            hintText: 'Digite aquí',
+                            hintStyle: TextStyle(
+                              color: Colors.black,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                          ),
+                        );
+                      }
                     ),
                   ),
                 ),
+
+
+
+
+
+
+
 
 
 
@@ -646,6 +769,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                 ),
 
 
+
+
                 ElevatedButton(
                   onPressed: seccionHabilitada
                       ? () {
@@ -682,6 +807,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   */
 
 
+
+
   // Funciones para mostrar diálogos
   void mostrarError(String mensaje) {
     showDialog(
@@ -704,6 +831,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }
 
 
+
+
   // Función para mostrar diálogo de registro correcto
   void registroCorrecto(String mensaje) {
     showDialog(
@@ -722,12 +851,16 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
               },
               child: const Text('Aceptar'),
 
+
             )
           ],
         );
       },
     );
   }
+
+
+
 
 
 
@@ -779,4 +912,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     );
   }
 }
+
+
+
+
 

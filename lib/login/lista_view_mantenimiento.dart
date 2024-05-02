@@ -681,10 +681,10 @@ ExpansionPanel _buildExpansionPanel({
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Tipo de Equipo: ${incidencia['NOM_TIPO_UBICACION']}',
+                          'Equipo: ${incidencia['NOM_TIPO_UBICACION']}',
                         ),
                         Text(
-                          'Emplazamiento: ${incidencia['EMPLAZAMIENTO']}',
+                          'Emp. ${incidencia['EMPLAZAMIENTO']}',
                         ),
                       ],
                     ),
