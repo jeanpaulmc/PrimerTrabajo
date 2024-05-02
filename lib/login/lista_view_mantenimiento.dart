@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:conduent/login/VistaDetallada.dart';
+import 'package:conduent/login/VistaFinalizados.dart';
+import 'package:conduent/login/login_view.dart';
 import 'package:conduent/login/serviceNotificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:conduent/login/login_view.dart';
-import 'package:conduent/login/VistaDetallada.dart';
-import 'package:conduent/login/VistaFinalizados.dart';
 import 'package:intl/intl.dart';
-import 'package:wakelock/wakelock.dart';
+
 
 class ListaViewMantenimiento extends StatefulWidget {
   final String usuario;
@@ -15,6 +15,7 @@ class ListaViewMantenimiento extends StatefulWidget {
   final String? selectedTramoId;
   final String? nombreTramo;
   final UserData userData;
+
 
   const ListaViewMantenimiento({
     Key? key,
@@ -25,41 +26,51 @@ class ListaViewMantenimiento extends StatefulWidget {
     required this.userData,
   }) : super(key: key);
 
+
   @override
   _ListaViewMantenimientoState createState() => _ListaViewMantenimientoState();
 }
 
+
 class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with WidgetsBindingObserver {
-  // Crear un controlador para el campo de texto del emplazamiento
   late Timer _sessionTimer;
-  
-  // Inicialmente asumimos que la pantalla está encendida
   bool _screenIsOn = true;
-
-
-  List<Map<String, dynamic>> _listaSinAtender = [];
-  List<Map<String, dynamic>> _listaEnAtencion = [];
+  late String lastDate;
+   final Map<String, bool> _expansionPanelState = {
+  'Incidencias sin recepcionar': false,
+  'Incidencias recepcionadas': false,
+  'Incidencias en atencion': false,
+  'Incidencias atendidas': false,
+};
+  List<Map<String, dynamic>> _lista1 = [];
+  List<Map<String, dynamic>> _lista2 = [];
+  List<Map<String, dynamic>> _lista3 = [];
+  List<Map<String, dynamic>> _lista4 = [];
   int pendientesSinAtender = 0;
   int pendientesEnAtencion = 0;
-  bool comando = false;
+  int incidenciaLista1 = 0;
+  int incidenciaLista2 = 0;
+  int incidenciaLista3 = 0;
+  int incidenciaLista4 = 0;
   bool _isLoading = false;
-  late String lastDate;
+
 
   @override
   void initState() {
     super.initState();
     _startSessionTimer();
-    Wakelock.enable();
-
-    verIncidencia();
     WidgetsBinding.instance.addObserver(this);
+    verIncidencia();
   }
 
+
+  @override
   void dispose() {
     _sessionTimer.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+
 
   void _startSessionTimer() {
     _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) {
@@ -67,10 +78,11 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
     });
   }
 
+
   void _updateLoginIfNeeded() {
     if (_screenIsOn) {
-      // La pantalla está encendida, realiza las acciones necesarias
       updateLogin();
+      consultarIncidenciaNueva();
     }
   }
 
@@ -80,23 +92,13 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.inactive:
-        _screenIsOn = true;
-        _updateLoginIfNeeded();
-        _startSessionTimer();
-        break;
       case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
         _screenIsOn = true;
         _updateLoginIfNeeded();
         _startSessionTimer();
-        break;
-      case AppLifecycleState.paused:
-        // La aplicación está en segundo plano o en estado de pausa, continúa actualizando el inicio de sesión cada 2 minutos
-        _screenIsOn = true;
-        _updateLoginIfNeeded();
-        _startSessionTimer(); // Aquí se vuelve a iniciar el temporizador
         break;
       case AppLifecycleState.resumed:
-        // Se reanuda la aplicación, comienza a actualizar el inicio de sesión cada 2 minutos hasta que cambie de estado nuevamente
         _screenIsOn = true;
         _updateLoginIfNeeded();
         _startSessionTimer();
@@ -108,65 +110,66 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
 
 
   Future<void> consultarIncidenciaNueva() async {
-  try {
-    var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getIncidenciaNueva');
-    var response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'idusuario': widget.userData.idUsuario,
-        'lastdate': lastDate,
-      }),
-    );
+    try {
+      var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getIncidenciaNueva');
+      var response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'idusuario': widget.userData.idUsuario,
+          'lastdate': lastDate,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      var data = json.decode(response.body);
-      var cant = data['result'][0]['CANT'] as String;
-      var lastFec = data['result'][0]['LAST_FEC'] as String?;
-      if (cant == '0') {
-        print('El valor de "CANT" es 0');
-        print('La fecha es $lastFec');
-      } else {
-        print('El valor de "CANT" $cant');
-        print('La fecha nueva $lastFec');
-        if (lastFec != null) {
-          // Actualizar el valor de lastDate
-          setState(() {
-          });
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        var cant = data['result'][0]['CANT'] as String;
+        var lastFec = data['result'][0]['LAST_FEC'] as String?;
+        if (cant == '0') {
+          print('El valor de "CANT" es 0');
+          print('La fecha es $lastFec');
+        } else {
+          print('El valor de "CANT" $cant');
+          print('La fecha nueva $lastFec');
+          if (lastFec != null) {
+            setState(() {
+              lastDate = lastFec;
+            });
+          }
+          showNotificacion1();
+          verIncidencia();
         }
-        showNotificacion1();
-        verIncidencia();
-        lastDate = lastFec!;
+      } else {
+        print('Error al consultar la incidencia nueva: ${response.statusCode}');
       }
-    } else {
-      print('Error al consultar la incidencia nueva: ${response.statusCode}');
+    } catch (error) {
+      print('Error al consultar: $error');
     }
-  } catch (error) {
-    print('Error al consultar: $error');
   }
-}
+
 
   Future<void> updateLogin() async {
     try {
-      var url = Uri.parse(
-          'http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/updateLogin');
+      var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/updateLogin');
       var response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'idsession': widget.userData.idSeccion}),
       );
 
+
       print('Tiempo sesion: ${response.body}');
+
 
       var data = json.decode(response.body);
       var estado = data['estado'];
       var msj = data['msj'];
       var result = data['result'];
-      var idsession = data['idsession'];
 
-      print('Aca idsession: ${idsession}');
-      
+
       print('Resultado Update Login: $result');
+
 
       switch (estado) {
         case 1:
@@ -188,6 +191,7 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
       print('Error al cerrar sesión: $error');
     }
   }
+
 
   void mostrarError(String msj) {
     showDialog(
@@ -215,10 +219,10 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
       _isLoading = true;
     });
 
+
     try {
       var idUsuario = widget.userData.idUsuario;
-      var url = Uri.parse(
-          'http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getListaIncidenciasPen');
+      var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getListaIncidenciasPen');
       var response = await http.post(
         url,
         headers: {
@@ -229,23 +233,50 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
         }),
       );
 
+
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         var result = data['result'];
 
+
         pendientesSinAtender = 0;
         pendientesEnAtencion = 0;
-        _listaSinAtender.clear();
-        _listaEnAtencion.clear();
+        incidenciaLista1 = 0;
+        incidenciaLista2 = 0;
+        incidenciaLista3 = 0;
+        incidenciaLista4 = 0;
+       
+        _lista1.clear();
+        _lista2.clear();
+        _lista3.clear();
+        _lista4.clear();
+
 
         for (var incidencia in result) {
           var descEstado = incidencia['ULT_EST'];
-          if (descEstado == '15' || descEstado == '16') {
-            _listaSinAtender.add(incidencia);
-            pendientesSinAtender++;
-          } else if (descEstado == '17' || descEstado == '18') {
-            _listaEnAtencion.add(incidencia);
-            pendientesEnAtencion++;
+          switch (descEstado) {
+            case '15':
+              _lista1.add(incidencia);
+              pendientesSinAtender++;
+              incidenciaLista1++;
+              break;
+            case '16':
+              _lista2.add(incidencia);
+              pendientesSinAtender++;
+              incidenciaLista2++;
+              break;
+            case '17':
+              _lista3.add(incidencia);
+              pendientesEnAtencion++;
+              incidenciaLista3++;
+              break;
+            case '18':
+              _lista4.add(incidencia);
+              pendientesEnAtencion++;
+              incidenciaLista4++;
+              break;
+            default:
+              break;
           }
         }
         setState(() {
@@ -263,38 +294,33 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
     }
   }
 
-void fechaParaApi() async {
-  if (_listaSinAtender.isEmpty) {
-    // Obtener la fecha actual y formatearla como se requiere
-    var now = DateTime.now();
-    var formatter = DateFormat('dd/MM/yyyy 00:00:00');
-    lastDate = formatter.format(now);
-    print('fecha vacia $lastDate');
-  } else {
-    var incidenciasEstado15 =
-        _listaSinAtender.where((incidencia) => incidencia['descEstado'] == '15').toList();
 
-    if (incidenciasEstado15.isNotEmpty) {
-      // Si hay incidencias con descEstado igual a '15', obtén la fecha de la última incidencia con ese estado
-      var ultimaIncidenciaEstado15 = incidenciasEstado15.reduce((a, b) =>
-          a['FEC_ULT_EST_COMPLETO'].compareTo(b['FEC_ULT_EST_COMPLETO']) > 0 ? a : b);
-      lastDate = ultimaIncidenciaEstado15['FEC_ULT_EST_COMPLETO'];
-      print('fecha ultima con estado 15: $lastDate');
+  void fechaParaApi() async {
+    if (_lista1.isEmpty) {
+      var now = DateTime.now();
+      var formatter = DateFormat('dd/MM/yyyy 00:00:00');
+      lastDate = formatter.format(now);
+      print('fecha vacia $lastDate');
     } else {
-      // Si no hay incidencias con descEstado igual a '15', obtén la fecha de la última incidencia sin importar el estado
-      var ultimaIncidencia =
-          _listaSinAtender.reduce((a, b) => a['FEC_ULT_EST_COMPLETO'].compareTo(b['FEC_ULT_EST_COMPLETO']) > 0 ? a : b);
-      lastDate = ultimaIncidencia['FEC_ULT_EST_COMPLETO'];
-      print('fecha ultima sin estado 15: $lastDate');
+      var incidenciasEstado15 =
+          _lista1.where((incidencia) => incidencia['descEstado'] == '15').toList();
+
+
+      if (incidenciasEstado15.isNotEmpty) {
+        var ultimaIncidenciaEstado15 = incidenciasEstado15.reduce((a, b) =>
+            a['FEC_ULT_EST_COMPLETO'].compareTo(b['FEC_ULT_EST_COMPLETO']) > 0 ? a : b);
+        lastDate = ultimaIncidenciaEstado15['FEC_ULT_EST_COMPLETO'];
+        print('fecha ultima con estado 15: $lastDate');
+      } else {
+        var ultimaIncidencia =
+            _lista1.reduce((a, b) => a['FEC_ULT_EST_COMPLETO'].compareTo(b['FEC_ULT_EST_COMPLETO']) > 0 ? a : b);
+        lastDate = ultimaIncidencia['FEC_ULT_EST_COMPLETO'];
+        print('fecha ultima sin estado 15: $lastDate');
+      }
     }
   }
-}
 
-  //actualizar pagina
-  void _actualizar() {
-    verIncidencia();
-  }
-  // Color de titulos
+
   Color getColorForStatus(String status) {
     switch (status) {
       case 'SIN RECEPCIONAR':
@@ -310,7 +336,7 @@ void fechaParaApi() async {
     }
   }
 
-    // Color de alertas
+
   Color getColorAlerts(String tiempo) {
     switch (tiempo) {
       case '30':
@@ -320,44 +346,48 @@ void fechaParaApi() async {
       case '120':
         return Colors.purple;
       case '0':
-        return Colors.purple;
+        return Colors.green;
       default:
         return Colors.black;
     }
   }
 
+
   void _finalizar() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => VistaFinalizados(
-        nombreUsuario: widget.userData.nombreUsuario,
-        userID: widget.userData.idUsuario,
-        userData: widget.userData,
-        )
+      MaterialPageRoute(
+        builder: (context) => VistaFinalizados(
+          nombreUsuario: widget.userData.nombreUsuario,
+          userID: widget.userData.idUsuario,
+          userData: widget.userData,
+        ),
       ),
     ).then((value) {
       verIncidencia();
     });
   }
 
-void _detallada(String idIncidencia) async {
-  var incidencia = _listaSinAtender.firstWhere((element) => element['ID_INCIDENCIA'] == idIncidencia, orElse: () => {});
-  if (incidencia['ULT_EST'] == '15') {
-    await _updateEstado(incidencia['ID_INCIDENCIA']); 
-  }
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => VistaDetallada(
-        idIncidencia: idIncidencia,
-        nombreUsuario: widget.userData.nombreUsuario,
-        userData: widget.userData,
+
+  void _detallada(String idIncidencia) async {
+    var incidencia = _lista1.firstWhere((element) => element['ID_INCIDENCIA'] == idIncidencia, orElse: () => {});
+    if (incidencia['ULT_EST'] == '15') {
+      await _updateEstado(incidencia['ID_INCIDENCIA']);
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VistaDetallada(
+          idIncidencia: idIncidencia,
+          nombreUsuario: widget.userData.nombreUsuario,
+          userData: widget.userData,
+        ),
       ),
-    ),
-  ).then((value) {
-    verIncidencia();
-  });
-}
+    ).then((value) {
+      verIncidencia();
+    });
+  }
+
 
   Future<void> _updateEstado(String idIncidencia) async {
     try {
@@ -379,6 +409,27 @@ void _detallada(String idIncidencia) async {
       print('Error al realizar algo especial: $error');
     }
   }
+
+
+  void _toggleExpansionPanelState(int index) {
+  switch (index) {
+    case 0:
+      _expansionPanelState['Incidencias sin recepcionar'] = !_expansionPanelState['Incidencias sin recepcionar']!;
+      break;
+    case 1:
+      _expansionPanelState['Incidencias recepcionadas'] = !_expansionPanelState['Incidencias recepcionadas']!;
+      break;
+    case 2:
+      _expansionPanelState['Incidencias en atencion'] = !_expansionPanelState['Incidencias en atencion']!;
+      break;
+    case 3:
+      _expansionPanelState['Incidencias atendidas'] = !_expansionPanelState['Incidencias atendidas']!;
+      break;
+    default:
+      break;
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -440,21 +491,21 @@ void _detallada(String idIncidencia) async {
                                   textAlign: TextAlign.center,
                                 ),
                               ),
-                            GestureDetector(
-                              onTap: _actualizar,
-                              child: Container(
-                              padding: const EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                borderRadius: BorderRadius.circular(8.0),
+                              GestureDetector(
+                                onTap: verIncidencia,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: const Icon(
+                                    Icons.autorenew,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
                               ),
-                              child: const Icon(
-                              Icons.autorenew, 
-                              color: Colors.white,
-                              size: 24, 
-                               ),
-                              ),
-                             ),
                             ],
                           ),
                         ],
@@ -469,18 +520,7 @@ void _detallada(String idIncidencia) async {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (_listaSinAtender.isNotEmpty)
-                              _buildIncidenciasGroup(
-                                title: 'Incidencias Pendientes',
-                                incidencias: _listaSinAtender,
-                                color: Colors.red,
-                              ),
-                            if (_listaEnAtencion.isNotEmpty)
-                              _buildIncidenciasGroup(
-                                title: 'Incidencias Realizadas',
-                                incidencias: _listaEnAtencion,
-                                color: Colors.blueGrey,
-                              ),
+                            _buildExpansionPanelList(),
                           ],
                         ),
                       ),
@@ -492,7 +532,6 @@ void _detallada(String idIncidencia) async {
             bottom: 16.0,
             child: GestureDetector(
               onTap: _finalizar,
-
               child: Container(
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
@@ -514,109 +553,183 @@ void _detallada(String idIncidencia) async {
     );
   }
 
-  Widget _buildIncidenciasGroup({
-    required String title,
-    required List<Map<String, dynamic>> incidencias,
-    required Color color,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Text(
-            title,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
-          ),
-        ),
-        Column(
-          children: incidencias.map((incidencia) {
-            var status = incidencia['DESC_ESTADO'];
-            var textColor = getColorForStatus(status);
-            var tiempo = incidencia['TIEMPO_SIN_ATENDER'];
-            var alerColor = getColorAlerts(tiempo);
-            return GestureDetector(
-              onTap: () => _detallada(incidencia['ID_INCIDENCIA']),
 
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: Offset(0, 3),
+Widget _buildExpansionPanelList() {
+  return ExpansionPanelList(
+    expansionCallback: (int index, bool isExpanded) {
+      setState(() {
+        _toggleExpansionPanelState(index);
+      });
+    },
+    children: [
+      _buildExpansionPanel(
+        title: 'Incidencias sin recepcionar',
+        incidencias: _lista1,
+        color: Colors.red,
+        isExpanded: false,
+        itemCount: incidenciaLista1,
+      ),
+      _buildExpansionPanel(
+        title: 'Incidencias recepcionadas',
+        incidencias: _lista2,
+        color: Colors.orange,
+        isExpanded: false,
+        itemCount: incidenciaLista2,
+      ),
+      _buildExpansionPanel(
+        title: 'Incidencias en atencion',
+        incidencias: _lista3,
+        color: Colors.blueGrey,
+        isExpanded: false,
+        itemCount: incidenciaLista3,
+      ),
+      _buildExpansionPanel(
+        title: 'Incidencias atendidas',
+        incidencias: _lista4,
+        color: Colors.green,
+        isExpanded: false,
+        itemCount: incidenciaLista4,
+      ),
+    ],
+  );
+}
+
+
+ExpansionPanel _buildExpansionPanel({
+  required String title,
+  required int itemCount,
+  required List<Map<String, dynamic>> incidencias,
+  required Color color,
+  required bool isExpanded,
+}) {
+  return ExpansionPanel(
+    canTapOnHeader: true,
+    headerBuilder: (BuildContext context, bool isExpanded) {
+      return ListTile(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _expansionPanelState[title] = !_expansionPanelState[title]!;
+                });
+              },
+             
+              child: Row(
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
+                  ),
+                  SizedBox(width: 10),
+                  Container(
+                    width: 30,
+                    height: 30,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
+                    child: Text(
+                      itemCount.toString(),
+                      style: const TextStyle(fontSize: 12, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        onTap: () {
+          setState(() {
+            _expansionPanelState[title] = !_expansionPanelState[title]!;
+          });
+        },
+      );
+    },
+    body: Column(
+      children: incidencias.map((incidencia) {
+        var status = incidencia['DESC_ESTADO'];
+        var textColor = getColorForStatus(status);
+        var tiempo = incidencia['TIEMPO_SIN_ATENDER'];
+        var alerColor = getColorAlerts(tiempo);
+        return GestureDetector(
+          onTap: () => _detallada(incidencia['ID_INCIDENCIA']),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(8.0),
-                    color: Colors.white,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                color: Colors.white,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Tipo de Equipo: ${incidencia['NOM_TIPO_UBICACION']}',
-                            ),
-                            Text(
-                              'Emplazamiento: ${incidencia['EMPLAZAMIENTO']}',
-                            ),
-                          ],
+                        Text(
+                          'Tipo de Equipo: ${incidencia['NOM_TIPO_UBICACION']}',
                         ),
                         Text(
-                          'Incidencia: ${incidencia['DESCRIPCION']}'
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '${incidencia['DESC_ESTADO']} desde el ${incidencia['FEC_ULT_EST']}',
-                              style: TextStyle(color: textColor),
-                            ),
-                          ],
-                        ),
-
-                        //Alerta de tiempo
-                      if (status == 'SIN RECEPCIONAR' && incidencia['TIEMPO_SIN_ATENDER'] != '0')
-                        Container(
-                      
-                          width: double.infinity, 
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                decoration: BoxDecoration(
-                                  color: alerColor,
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: Text(
-                                  '> ${incidencia['TIEMPO_SIN_ATENDER']} minutos',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                          'Emplazamiento: ${incidencia['EMPLAZAMIENTO']}',
                         ),
                       ],
                     ),
-                  ),
+                    Text('Incidencia: ${incidencia['DESCRIPCION']}'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${incidencia['DESC_ESTADO']} desde el ${incidencia['FEC_ULT_EST']}',
+                          style: TextStyle(color: textColor),
+                        ),
+                      ],
+                    ),
+                    if (status == 'SIN RECEPCIONAR' && incidencia['TIEMPO_SIN_ATENDER'] != '0')
+                      Container(
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
+                              decoration: BoxDecoration(
+                                color: alerColor,
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: Text(
+                                '> ${incidencia['TIEMPO_SIN_ATENDER']} minutos',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
+            ),
+          ),
+        );
+      }).toList(),
+    ),
+    isExpanded: _expansionPanelState[title]!,
+  );
+}
 }

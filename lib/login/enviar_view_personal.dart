@@ -50,6 +50,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
 
 
   List<TipoEquipo> equipoOptions = [];
+  List<TipoEquipo> nombreIncidencia = [];
+
   String? selectedEquipoId;
   TextEditingController emplazamientoController = TextEditingController();
   String? selectedIncidenciaId;
@@ -275,6 +277,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         }),
       );
       print('Response Incidencia: ${response.body}');
+
+
+
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         setState(() {
@@ -283,6 +288,10 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                 nombre: item['DESCRIPCION'].toString(),
                 id: item['ID_TIPO_INCIDENCIA'].toString(),
               )));
+          nombreIncidencia = incidenciaOptions;
+          List<String> nombresInci = nombreIncidencia.map((equipo) => equipo.nombre).toList();
+
+
         });
         print('Estado: ${data['estado']}');
         print('Resultado: ${data['result']}');
@@ -497,6 +506,10 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+
+
+
+                const SizedBox(height: 20),
                 // Selección de tipo de Equipo
                 const Text('1.- Tipo de Equipo'),
                 SizedBox(
@@ -521,9 +534,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                         setState(() {
                           selectedEquipoId = newValue;
                           selectedIncidenciaId = null;
-
                           verIncidencia();
                         });
+
                       },
                       items: [
                         DropdownMenuItem<String>(
@@ -546,6 +559,13 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                 ),
 
 
+
+
+
+
+
+
+                const SizedBox(height: 20),
                 // Selecionar Tipo Incidencia
                 const Text('2.- Tipo de Incidencia'),
                 SizedBox(
@@ -557,40 +577,34 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                       border: Border.all(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: DropdownButton<String>(
-                      value: selectedIncidenciaId,
-                      icon: Icon(Icons.arrow_drop_down),
-                      style:
-                          const TextStyle(color: Colors.black, fontSize: 13),
-                      underline: Container(
-                        height: 0,
-                        color: Colors.transparent,
-                      ),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedIncidenciaId = newValue;
-                        });
-                        _verificarCondiciones(); // Verificar las condiciones cuando cambia el tipo de incidencia
+                    child: Autocomplete<String>(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        // Filtrar las opciones según lo que se haya escrito en el campo de texto
+                        return incidenciaOptions
+                            .where((option) => option.nombre
+                                .toLowerCase()
+                                .contains(textEditingValue.text.toLowerCase()))
+                            .map((option) => option.nombre)
+                            .toList();
                       },
-                      items: [
-                        const DropdownMenuItem(
-                          value: null,
-                          child: Center(child: Text("Seleccionar")),
-                        ),
-                        ...incidenciaOptions.map((TipoEquipo tipoEquipo) {
-                          return DropdownMenuItem<String>(
-                            value: tipoEquipo.id,
-                            child: Center(child: Text(tipoEquipo.nombre)),
-                          );
-                        }).toList(),
-                      ],
-                      dropdownColor: Colors.grey[200],
-                      elevation: 0,
-                      isExpanded: true,
-                      onTap: () {},
+                      onSelected: (String selected) {
+                        // Actualizar el valor seleccionado cuando se elige una opción del autocompletado
+                        setState(() {
+                          selectedIncidenciaId = incidenciaOptions
+                              .firstWhere((option) => option.nombre == selected)
+                              .id;
+                        });
+                        verIncidencia();
+
+                      },
                     ),
                   ),
                 ),
+
+
+
+
+
 
 
                 const SizedBox(height: 20),
