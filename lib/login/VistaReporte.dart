@@ -67,23 +67,27 @@ class _VistaReporteState extends State<VistaReporte> {
       montoBilletes = '0,00';
     }
     if (comentarios.isNotEmpty) {
-      await _llamarAPI();
       Navigator.pop(context);
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Center(child: Text('Reporte enviado')),
+            title: const  Text('¿Desea completar el reporte?'),
             actions: <Widget>[
               TextButton(
-                onPressed: () {
+                onPressed: () async {
+                  await _llamarAPI();
                   Navigator.of(context).pop();
                   Navigator.pop(context);
                 },
-                child: const Center(
-                 child: Text('OK'),
+                 child: Text('Si'),
                 ),
-              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                 child: Text('No'),
+                ),
             ],
           );
         },
