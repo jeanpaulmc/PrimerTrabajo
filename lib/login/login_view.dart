@@ -56,8 +56,18 @@ class _LoginViewState extends State<LoginView> {
     if (isFirstRun) {
       await _requestBackgroundActivityPermission();
       await _requestNotificationPermission();
+      await _requestPermissions();
       await prefs.setBool('isFirstRun', false);
     }
+  }
+
+  
+  Future<void> _requestPermissions() async {
+    // Solicitar permiso de cámara
+    await Permission.camera.request();
+
+    // Solicitar permisos de almacenamiento externo
+    await Permission.storage.request();
   }
 
   Future<bool> isPermissionGrants(Permission permission) async {

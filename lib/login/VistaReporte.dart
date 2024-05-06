@@ -196,7 +196,54 @@ class _VistaReporteState extends State<VistaReporte> {
                   comentarios = value;
                   _checkComentarios();
                 });
-              }, maxLines: 10, maxLength: 500), 
+              }, maxLines: 10, maxLength: 500),
+              const SizedBox(height: 10),
+Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  mainAxisSize: MainAxisSize.max, 
+  children: [
+    ElevatedButton.icon(
+      onPressed: () {
+        // Lógica para seleccionar fotos
+      },
+      icon: const Icon(
+        Icons.drive_folder_upload,
+        color: Colors.white, 
+      ),
+      label: const Text(
+        'Seleccionar Fotos',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.orange,
+      ),
+    ),
+    SizedBox(width: 10),
+    ElevatedButton.icon(
+      onPressed: () {
+        // Lógica para otra acción
+      },
+      icon: const Icon(
+        Icons.camera_alt_rounded,
+        color: Colors.white, 
+      ),
+      label: const Text('Tomar Foto',
+                style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ), 
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+      ),
+    ),
+  ],
+),
+
+
             ],
           ),
         ),
