@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:conduent/login/VistaDetallada.dart';
 import 'package:conduent/login/VistaFinalizados.dart';
+import 'package:conduent/login/enviar_view_personal.dart';
 import 'package:conduent/login/login_view.dart';
 import 'package:conduent/login/serviceNotificacion.dart';
 import 'package:flutter/material.dart';
@@ -368,6 +369,22 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
     });
   }
 
+    void _RegistroIncidendia() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EnviarPersonal(
+          usuario: widget.usuario,
+          contrasenia: widget.contrasenia,
+          userData: widget.userData,
+        ),
+      ),
+    ).then((value) {
+      verIncidencia();
+    });
+  }
+
+
 
   void _detallada(String idIncidencia) async {
     var incidencia = _lista1.firstWhere((element) => element['ID_INCIDENCIA'] == idIncidencia, orElse: () => {});
@@ -540,6 +557,29 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
                 ),
                 child: const Text(
                   'Finalizados',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+
+          Positioned(
+            left: 16.0,
+            bottom: 16.0,
+            child: GestureDetector(
+              onTap: _RegistroIncidendia,
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: const Text(
+                  'Registrar',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

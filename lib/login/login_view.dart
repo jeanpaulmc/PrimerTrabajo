@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_activity_recognition/flutter_activity_recognition.dart';
@@ -26,11 +25,13 @@ class UserData {
   final String idUsuario;
   final String nombreUsuario;
   final String idSeccion;
+  final String idTipoUsuario;
 
   UserData({
     required this.idUsuario,
     required this.nombreUsuario,
-    required this.idSeccion,
+    required this.idSeccion, 
+    required this.idTipoUsuario,
   });
 }
 
@@ -122,8 +123,8 @@ class _LoginViewState extends State<LoginView> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Permitir notificaciones'),
-            content: Text('¿Desea permitir que la aplicación envíe notificaciones?'),
+            title: const Text('Permitir notificaciones'),
+            content: const Text('¿ Desea permitir que la aplicación envíe notificaciones?'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
@@ -232,6 +233,7 @@ class _LoginViewState extends State<LoginView> {
           idUsuario: idUsuario,
           nombreUsuario: nombreUsuario,
           idSeccion: idSeccion,
+          idTipoUsuario: idTipoUsuario,
         );
 
         if (idTipoUsuario == '5' || idTipoUsuario == '6' || idTipoUsuario == '7') {
@@ -250,7 +252,7 @@ class _LoginViewState extends State<LoginView> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EnviarMantenimiento(
+              builder: (context) => EnviarMantenimiento(    
                 userData: userData,
                 usuario: usuario.text,
                 contrasenia: contrasenia.text,

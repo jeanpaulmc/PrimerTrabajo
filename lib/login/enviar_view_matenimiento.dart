@@ -185,6 +185,7 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
       idUsuario: idUsuario,
       nombreUsuario: nombreUsuario,
       idSeccion: widget.userData.idSeccion,
+      idTipoUsuario: widget.userData.idTipoUsuario,
     );
 
     Navigator.push(
