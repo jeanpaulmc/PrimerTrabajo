@@ -314,8 +314,13 @@ class _LoginViewState extends State<LoginView> {
                     bottom: 5,
                   ),
                   child: AppBar(
-                    title: const Text('Bienvenido al registro de seguimiento', style: TextStyle(fontSize: 20)),
-                  ),
+  title: const Text(
+    'Bienvenido al registro de seguimiento',
+    style: TextStyle(fontSize: 18),
+  ),
+  centerTitle: true, 
+    ),
+
                 ),
                 SizedBox(height: 15),
                 Container(

@@ -58,7 +58,7 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
       var response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'selected_value': selectedTramoId}),
+        //body: jsonEncode({'selected_value': selectedTramoId}),
       );
 
       if (response.statusCode == 200) {

@@ -1,18 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:conduent/login/enviar_view_matenimiento.dart';
 import 'package:conduent/login/login_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-
-
-import 'login_view.dart';
-
-
-
-
-import 'package:visibility_detector/visibility_detector.dart';
 import 'package:wakelock/wakelock.dart';
 
 
@@ -21,10 +12,6 @@ import 'package:wakelock/wakelock.dart';
 class TipoEquipo {
   final String nombre;
   final String id;
-
-
-
-
   TipoEquipo({required this.nombre, required this.id});
 }
 
@@ -36,13 +23,6 @@ class EnviarPersonal extends StatefulWidget {
   final String contrasenia;
   final UserData userData;
 
-
-
-
-
-
-
-
   const EnviarPersonal(
       {Key? key,
       required this.usuario,
@@ -50,30 +30,9 @@ class EnviarPersonal extends StatefulWidget {
       required this.userData})
       : super(key: key);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   @override
   _EnviarPersonalState createState() => _EnviarPersonalState();
 }
-
-
-
-
-
-
 
 
 class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObserver {
@@ -83,71 +42,26 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
  
   // Inicialmente asumimos que la pantalla está encendida
   bool _screenIsOn = true;
-
-
-
-
-
-
   List<TipoEquipo> equipoOptions = [];
   List<TipoEquipo> nombreIncidencia = [];
-
-
-
-
   String? selectedEquipoId;
   TextEditingController emplazamientoController = TextEditingController();
   String? selectedIncidenciaId;
   bool seccionHabilitada = false;
   List<TipoEquipo> incidenciaOptions = [];
-
-
-
-
-
-
-
-
-
-
   String? IdEmplazamiento;
   String? estadoEmplazamiento;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   @override
   void initState() {
     super.initState();
-
-
-
-
     _startSessionTimer();
-   
-
-
     Wakelock.enable(); // Mantener la pantalla encendida
     // Llamar a la función para ver el tipo de equipo
     verEquipo();
     emplazamientoController.addListener(_verificarCondiciones);
     WidgetsBinding.instance.addObserver(this);
   }
-
-
-
 
   void dispose() {
     // Detener temporizador al cerrar el widget
@@ -160,25 +74,13 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     super.dispose();
   }
 
-
-
-
-
-
-
-
   void _startSessionTimer() {
     _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       _updateLoginIfNeeded();
     });
   }
 
-
-
-
   void _updateLoginIfNeeded() {
-
-
     if(widget.userData.idTipoUsuario == '5' ||
       widget.userData.idTipoUsuario == '6' ||
       widget.userData.idTipoUsuario == '7'){
@@ -188,13 +90,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         }
     }
   }
-
-
-
-
-
-
-
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -229,28 +124,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     }
   }
 
-
-
-
-
-
-
-
-  /*
-  @override
-  void initState() {
-    super.initState();
-    verEquipo();
-    emplazamientoController.addListener(_verificarCondiciones);
-  }*/
-
-
-
-
-
-
-
-
   void _verificarCondiciones() {
     bool condicionesCumplidas = selectedEquipoId != null &&
         selectedIncidenciaId != null &&
@@ -259,13 +132,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       seccionHabilitada = condicionesCumplidas;
     });
   }
-
-
-
-
-
-
-
 
   // Función para ver el tipo de equip
   // Api02
@@ -280,24 +146,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         },
         body: jsonEncode({'selected_value': selectedEquipoId}),
       );
-
-
-
-
-
-
-
-
-      print('Response Equipo: ${response.body}');
-      print('Id Usuario aca: ${widget.userData.idUsuario}');
-      print('Id Seccion aca: ${widget.userData.idSeccion}');
-
-
-
-
-
-
-
 
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
@@ -318,12 +166,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }
 
 
-
-
-
-
-
-
   // Función para verificar el emplazamiento
   // Api04
   Future<void> verEmplazamineto() async {
@@ -333,13 +175,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         mostrarError('Por favor, ingrese un emplazamiento');
         return;
       }
-
-
-
-
-
-
-
 
       var url = Uri.parse(
           'http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/getValidaEmplazamiento');
@@ -354,29 +189,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         }),
       );
 
-
-
-
-
-
-
-
-      print('Response Emplazamiento: ${response.body}');
-
-
-
-
-
-
-
-
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         estadoEmplazamiento = data['estado'];
-        print('Estado: $estadoEmplazamiento');
-
-
-
 
         switch (estadoEmplazamiento) {
           case "-1":
@@ -384,15 +199,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
             break;
           case "1":
             IdEmplazamiento = data['result']['ID_UBICACION'];
-            print('Debo enviar los siguientes datos:');
-            print(
-                '(ID_TIPO_UBICACION obtenido en API04: $IdEmplazamiento');
-            print(
-                '(ID_TIPO_INCIDENCIA), seleccionado en el combo box del API03: $selectedIncidenciaId');
-            print('(ID_TIPO_UBICACION), obtenido en API02: $selectedEquipoId');
-            print(
-                '(ID_USUARIO), obtenido en API01: ${widget.userData.idUsuario}');
-            enviarRegistroIncidencia(); // Llamar a enviarRegistroIncidencia solo si el estado es 1
+            enviarRegistroIncidencia(); 
             break;
           default:
             mostrarError('Saliste de la App, vuelve a ingresar');
@@ -403,16 +210,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       print('Verificar emplazamiento!: $error');
     }
   }
-
-
-
-
-
-
-
-
-
-
 
 
   // Función para ver el tipo de incidencia
@@ -432,17 +229,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       );
       print('Response Incidencia: ${response.body}');
 
-
-
-
-
-
-
-
-
-
-
-
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         setState(() {
@@ -453,14 +239,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
               )));
           nombreIncidencia = incidenciaOptions;
           List<String> nombresInci = nombreIncidencia.map((equipo) => equipo.nombre).toList();
-
-
-
-
-
-
-
-
         });
         print('Estado: ${data['estado']}');
         print('Resultado: ${data['result']}');
@@ -472,13 +250,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       mostrarError('No hay conexión con el servidor');
     }
   }
-
-
-
-
-
-
-
 
   // Función para enviar el registro de la incidencia
   // Api05
@@ -499,9 +270,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
             'idusuario': widget.userData.idUsuario,
           }),
         );
-
-
-
 
         print('Response enviar Registro Incidencia: ${response.body}');
         var data = json.decode(response.body);
@@ -540,27 +308,12 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
           'idsession': widget.userData.idSeccion,
         }),
       );
-
-
-
-
       print('Response Cerrar Seccion Login: ${response.body}');
-
-
-
-
       var data = json.decode(response.body);
       var estado = data['estado'];
       var msj = data['msj'];
       var result = data['result'];
-
-
-
-
       print('Resultado 2: $result');
-
-
-
 
       switch (estado) {
         case 1:
@@ -587,13 +340,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     }
   }
 
-
-
-
-
-
-
-
   // Funcion para update Login
   // Api07
   Future<void> updateLogin() async {
@@ -606,45 +352,14 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         body: jsonEncode({'idsession': widget.userData.idSeccion}),
       );
 
-
-
-
       print('Tiempo sesion: ${response.body}');
-
-
-
-
       var data = json.decode(response.body);
       var estado = data['estado'];
       var msj = data['msj'];
       var result = data['result'];
       var idsession = data['idsession'];
-
-
-
-
-
-
-
-
       print('Aca idsession: ${idsession}');
-
-
-
-
-
-
-
-
       print('Resultado Update Login: $result');
-
-
-
-
-
-
-
-
       switch (estado) {
         case 1:
           print('Sesión actualizada');
@@ -665,13 +380,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       print('Error al cerrar sesión: $error');
     }
   }
-
-
-
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -712,15 +420,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         return false;
       },
 
-
-
-
-
-
-
-
-
-
      child: Scaffold(
       appBar: AppBar(
         title: Row(
@@ -731,7 +430,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
               children: [
                 Text(
                   'Usuario: ${widget.userData.nombreUsuario}',
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 16,
                       color: Colors.orange,
                       fontWeight: FontWeight.bold),
@@ -784,12 +483,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                           verIncidencia();
                         });
 
-
-
-
                       },
                       items: [
-                        DropdownMenuItem<String>(
+                        const DropdownMenuItem<String>(
                           value: null,
                           child: Center(child: Text('Seleccionar')),
                         ),
@@ -848,7 +544,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                           onEditingComplete: onEditingComplete,
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 13),
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Digite aquí',
                             hintStyle: TextStyle(
                               color: Colors.black,
@@ -862,21 +558,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                   ),
                 ),
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 const SizedBox(height: 20),
                 // Digitar Emplazamiento
                 const Text('3.- Digite el emplazamiento del equipo'),
@@ -888,7 +569,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.white,
                           spreadRadius: 2,
@@ -901,8 +582,8 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                       controller: emplazamientoController,
                       keyboardType: TextInputType.text,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13),
-                      decoration: InputDecoration(
+                      style: const TextStyle (fontSize: 13),
+                      decoration: const InputDecoration(
                         hintText: 'Digite aquí',
                         hintStyle: TextStyle(
                           color: Colors.black,
@@ -914,12 +595,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                     ),
                   ),
                 ),
-
-
-
-
-
-
 
 
                 ElevatedButton(
@@ -947,18 +622,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       ),
     );
   }
-  /*
-  @override
-  void dispose() {
-    emplazamientoController.dispose();
-    // Llamar a la función para registrar la salida de la sesión
-    enviarCerrarSeccion();
-    super.dispose();
-  }
-  */
-
-
-
 
   // Funciones para mostrar diálogos
   void mostrarError(String mensaje) {
@@ -982,12 +645,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }
 
 
-
-
-
-
-
-
   // Función para mostrar diálogo de registro correcto
   void registroCorrecto(String mensaje) {
     showDialog(
@@ -1006,18 +663,12 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
               },
               child: const Text('Aceptar'),
 
-
-
-
             )
           ],
         );
       },
     );
   }
-
-
-
 
 
 

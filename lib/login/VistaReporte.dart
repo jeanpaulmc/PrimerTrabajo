@@ -100,6 +100,10 @@ class _VistaReporteState extends State<VistaReporte> {
     }
   }
 
+  void printtt(){
+    print('${fotosBase64List}');
+  }
+
   Future<void> _llamarAPI() async {
     final url = Uri.parse(
         'http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/updateIncidencia');
@@ -111,6 +115,7 @@ class _VistaReporteState extends State<VistaReporte> {
         'mntmonedas': montoMonedas,
         'comentarios': comentarios,
         'idusuario': widget.idUsuario,
+        'imagenes': fotosBase64List,
       }),
     );
     if (response.statusCode == 200) {
@@ -254,6 +259,7 @@ class _VistaReporteState extends State<VistaReporte> {
                         print('Foto en base64: $fotoBase64');
                         setState(() {
                           fotosSeleccionadas.add(foto);
+                          fotosBase64List.add(fotoBase64);
                         });
                       }
                     },
@@ -297,6 +303,8 @@ class _VistaReporteState extends State<VistaReporte> {
                               return Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Container(
+
+
   decoration: BoxDecoration(
     borderRadius: BorderRadius.circular(10),
     boxShadow: [
@@ -312,6 +320,7 @@ class _VistaReporteState extends State<VistaReporte> {
   onLongPress: () {
     setState(() {
       fotosSeleccionadas.removeAt(index);
+      fotosBase64List.removeAt(index);
     });
   },
   child: AnimatedOpacity(
@@ -346,7 +355,8 @@ class _VistaReporteState extends State<VistaReporte> {
             foregroundColor: Colors.white,
             backgroundColor: Colors.orange,
           ),
-          onPressed: _isButtonEnabled ? activarReporte : null,
+         //onPressed: printtt,
+         onPressed: _isButtonEnabled ? activarReporte : null,
           child: const Text(
             'Completar reporte',
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -390,7 +400,7 @@ class _VistaReporteState extends State<VistaReporte> {
             ),
           ),
         ),
-      ],
+      ], 
     );
   }
 }

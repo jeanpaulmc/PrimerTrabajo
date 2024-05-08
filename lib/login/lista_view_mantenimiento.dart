@@ -74,7 +74,7 @@ class _ListaViewMantenimientoState extends State<ListaViewMantenimiento> with Wi
 
 
   void _startSessionTimer() {
-    _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+    _sessionTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       _updateLoginIfNeeded();
     });
   }

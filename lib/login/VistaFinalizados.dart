@@ -234,10 +234,10 @@ class _VistaFinalizadosState extends State<VistaFinalizados> {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        'Tipo de Equipo: ${incidencia['NOM_TIPO_UBICACION']}',
+                                        'Equipo: ${incidencia['NOM_TIPO_UBICACION']}',
                                       ),
                                       Text(
-                                        'Emplazamiento: ${incidencia['EMPLAZAMIENTO']}',
+                                        'Emplaz. ${incidencia['EMPLAZAMIENTO']}',
                                       ),
                                     ],
                                   ),
