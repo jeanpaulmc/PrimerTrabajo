@@ -29,6 +29,7 @@ class _VistaReporteState extends State<VistaReporte> {
   bool _isButtonEnabled = false;
   late String fechafinal;
 
+
   List<XFile> fotosSeleccionadas = [];
   List<String> fotosBase64List = [];
 
@@ -45,24 +46,6 @@ class _VistaReporteState extends State<VistaReporte> {
   }
 
   void activarReporte() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
-              ),
-              SizedBox(height: 20),
-              Text('Enviando Reporte...'),
-            ],
-          ),
-        );
-      },
-    );
     if (montoMonedas.isEmpty) {
       montoMonedas = '0,00';
     }
@@ -70,7 +53,7 @@ class _VistaReporteState extends State<VistaReporte> {
       montoBilletes = '0,00';
     }
     if (comentarios.isNotEmpty) {
-      Navigator.pop(context);
+
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -79,9 +62,26 @@ class _VistaReporteState extends State<VistaReporte> {
             actions: <Widget>[
               TextButton(
                 onPressed: () async {
-                  await _llamarAPI();
-                  Navigator.of(context).pop();
-                  Navigator.pop(context);
+                   Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return const AlertDialog(
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                            ),
+                            SizedBox(height: 20),
+                            Text('Enviando Reporte...'),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                await _llamarAPI();
                 },
                 child: const Text('Si'),
               ),
@@ -104,30 +104,49 @@ class _VistaReporteState extends State<VistaReporte> {
     print('${fotosBase64List}');
   }
 
+  //api para mandar informacion de api
   Future<void> _llamarAPI() async {
-    final url = Uri.parse(
-        'http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/updateIncidencia');
-    final response = await http.post(
-      url,
-      body: jsonEncode({
+    try {
+      var url = Uri.parse(
+          'http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/updateIncidencia');
+      var response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
         'idincidencia': widget.idIncidencia,
         'mntbilletes': montoBilletes,
         'mntmonedas': montoMonedas,
         'comentarios': comentarios,
         'idusuario': widget.idUsuario,
         'imagenes': fotosBase64List,
-      }),
-    );
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      print('Se consumió la API correctamente $responseData');
+        }),
+      );
+      var data = json.decode(response.body);
+      print('Se subio reporte XD');
       await _updateEstadoReporte();
-    } else {
-      print(
-          'Error al consumir la API. Código de estado: ${response.statusCode}');
+    } catch (error) {
+            Navigator.pop(context);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error al enviar el reporte'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () async {
+                   Navigator.pop(context);
+                   Navigator.of(context).pop();
+                },
+                child: const Text('Ok'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
+  //api para cambiar estado a Finalizado
   Future<void> _updateEstadoReporte() async {
     try {
       var url = Uri.parse(
@@ -140,13 +159,32 @@ class _VistaReporteState extends State<VistaReporte> {
           'idincidencia': widget.idIncidencia,
         }),
       );
-
       var data = json.decode(response.body);
       var estado = data['estado'];
       var msj = data['msj'];
 
       print('Estado de la actualización: $estado');
       print('Mensaje de la actualización: $msj');
+      print('Se actualizo XD');
+
+      Navigator.pop(context);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Reporte enviado'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () async {
+                   Navigator.pop(context);
+                   Navigator.of(context).pop();
+                },
+                child: const Text('Ok'),
+              ),
+            ],
+          );
+        },
+      );
     } catch (error) {
       print('Error al realizar algo especial: $error');
     }
@@ -355,7 +393,8 @@ class _VistaReporteState extends State<VistaReporte> {
             foregroundColor: Colors.white,
             backgroundColor: Colors.orange,
           ),
-         //onPressed: printtt,
+
+        //onPressed: printtt,
          onPressed: _isButtonEnabled ? activarReporte : null,
           child: const Text(
             'Completar reporte',
