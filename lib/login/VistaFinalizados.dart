@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:conduent/login/VistaDetallada.dart';
-import 'package:conduent/login/login_view.dart';
+import 'package:conduent/login/VistaLogin.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,10 +10,11 @@ class VistaFinalizados extends StatefulWidget {
   final String userID;
   final UserData userData;
 
-  const VistaFinalizados({Key? key, 
-  required this.nombreUsuario, 
-  required this.userID, 
-  required this.userData,
+  const VistaFinalizados({
+    Key? key,
+    required this.nombreUsuario,
+    required this.userID,
+    required this.userData,
   }) : super(key: key);
 
   @override
@@ -112,9 +113,9 @@ class _VistaFinalizadosState extends State<VistaFinalizados> {
       context,
       MaterialPageRoute(
         builder: (context) => VistaDetallada(
-            idIncidencia: idIncidencia,
-            nombreUsuario: widget.nombreUsuario,
-            userData: widget.userData, 
+          idIncidencia: idIncidencia,
+          nombreUsuario: widget.nombreUsuario,
+          userData: widget.userData,
         ),
       ),
     );
@@ -158,62 +159,62 @@ class _VistaFinalizadosState extends State<VistaFinalizados> {
           children: [
             SizedBox(height: 20),
             Container(
-  margin: EdgeInsets.symmetric(horizontal: 20), 
-
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Expanded(
-        child: ElevatedButton(
-          onPressed: () => seleccionarFechaInicio(context),
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              margin: EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => seleccionarFechaInicio(context),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        backgroundColor: Colors.orange,
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Desde',
+                            style: TextStyle(fontSize: 15, color: Colors.white),
+                          ),
+                          Text(
+                            fechaInicio.toString().substring(0, 10),
+                            style: const TextStyle(
+                                fontSize: 15, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => seleccionarFechaTerminado(context),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        backgroundColor: Colors.orange,
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Hasta',
+                            style: TextStyle(fontSize: 15, color: Colors.white),
+                          ),
+                          Text(
+                            fechaTerminado.toString().substring(0, 10),
+                            style: const TextStyle(
+                                fontSize: 15, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            backgroundColor: Colors.orange,
-          ),
-          child: Column(
-            children: [
-              const Text(
-                'Desde',
-                style: TextStyle(fontSize: 15, color: Colors.white),
-              ),
-              Text(
-                fechaInicio.toString().substring(0, 10),
-                style: const TextStyle(fontSize: 15, color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(width: 10),
-      Expanded(
-        child: ElevatedButton(
-          onPressed: () => seleccionarFechaTerminado(context),
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            backgroundColor: Colors.orange,
-          ),
-          child: Column(
-            children: [
-              const Text(
-                'Hasta',
-                style: TextStyle(fontSize: 15, color: Colors.white),
-              ),
-              Text(
-                fechaTerminado.toString().substring(0, 10),
-                style: const TextStyle(fontSize: 15, color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ],
-  ),
-),
-
             SizedBox(height: 20),
             if (_fechasSeleccionadas)
               Expanded(
@@ -223,7 +224,8 @@ class _VistaFinalizadosState extends State<VistaFinalizados> {
                       return Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: GestureDetector(
-                          onTap: () => _detalladaFinal(incidencia['ID_INCIDENCIA']),
+                          onTap: () =>
+                              _detalladaFinal(incidencia['ID_INCIDENCIA']),
                           child: Card(
                             elevation: 5,
                             child: ListTile(
@@ -231,7 +233,8 @@ class _VistaFinalizadosState extends State<VistaFinalizados> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         'Equipo: ${incidencia['NOM_TIPO_UBICACION']}',
@@ -245,7 +248,8 @@ class _VistaFinalizadosState extends State<VistaFinalizados> {
                                     'Incidencia: ${incidencia['DESCRIPCION']}',
                                   ),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         '${incidencia['DESC_ESTADO']} desde el ${incidencia['FEC_ULT_EST']}',

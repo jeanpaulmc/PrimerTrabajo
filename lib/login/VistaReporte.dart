@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:conduent/login/login_view.dart';
+import 'package:conduent/login/VistaLogin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -15,7 +15,8 @@ class VistaReporte extends StatefulWidget {
     Key? key,
     required this.nombreUsuario,
     required this.idIncidencia,
-    required this.idUsuario, required UserData userData,
+    required this.idUsuario,
+    required UserData userData,
   }) : super(key: key);
 
   @override
@@ -28,7 +29,6 @@ class _VistaReporteState extends State<VistaReporte> {
   String comentarios = '';
   bool _isButtonEnabled = false;
   late String fechafinal;
-
 
   List<XFile> fotosSeleccionadas = [];
   List<String> fotosBase64List = [];
@@ -53,7 +53,6 @@ class _VistaReporteState extends State<VistaReporte> {
       montoBilletes = '0,00';
     }
     if (comentarios.isNotEmpty) {
-
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -62,7 +61,7 @@ class _VistaReporteState extends State<VistaReporte> {
             actions: <Widget>[
               TextButton(
                 onPressed: () async {
-                   Navigator.pop(context);
+                  Navigator.pop(context);
                   showDialog(
                     context: context,
                     barrierDismissible: false,
@@ -72,7 +71,8 @@ class _VistaReporteState extends State<VistaReporte> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.orange),
                             ),
                             SizedBox(height: 20),
                             Text('Enviando Reporte...'),
@@ -81,7 +81,7 @@ class _VistaReporteState extends State<VistaReporte> {
                       );
                     },
                   );
-                await _llamarAPI();
+                  await _llamarAPI();
                 },
                 child: const Text('Si'),
               ),
@@ -100,7 +100,7 @@ class _VistaReporteState extends State<VistaReporte> {
     }
   }
 
-  void printtt(){
+  void printtt() {
     print('${fotosBase64List}');
   }
 
@@ -113,19 +113,19 @@ class _VistaReporteState extends State<VistaReporte> {
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-        'idincidencia': widget.idIncidencia,
-        'mntbilletes': montoBilletes,
-        'mntmonedas': montoMonedas,
-        'comentarios': comentarios,
-        'idusuario': widget.idUsuario,
-        'imagenes': fotosBase64List,
+          'idincidencia': widget.idIncidencia,
+          'mntbilletes': montoBilletes,
+          'mntmonedas': montoMonedas,
+          'comentarios': comentarios,
+          'idusuario': widget.idUsuario,
+          'imagenes': fotosBase64List,
         }),
       );
       var data = json.decode(response.body);
       print('Se subio reporte XD');
       await _updateEstadoReporte();
     } catch (error) {
-            Navigator.pop(context);
+      Navigator.pop(context);
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -134,8 +134,8 @@ class _VistaReporteState extends State<VistaReporte> {
             actions: <Widget>[
               TextButton(
                 onPressed: () async {
-                   Navigator.pop(context);
-                   Navigator.of(context).pop();
+                  Navigator.pop(context);
+                  Navigator.of(context).pop();
                 },
                 child: const Text('Ok'),
               ),
@@ -176,8 +176,8 @@ class _VistaReporteState extends State<VistaReporte> {
             actions: <Widget>[
               TextButton(
                 onPressed: () async {
-                   Navigator.pop(context);
-                   Navigator.of(context).pop();
+                  Navigator.pop(context);
+                  Navigator.of(context).pop();
                 },
                 child: const Text('Ok'),
               ),
@@ -236,61 +236,59 @@ class _VistaReporteState extends State<VistaReporte> {
                 });
               }),
               const SizedBox(height: 10),
-              _buildTextField('Ingrese comentarios referente a la incidencia',
-                  false, (value) {
+              _buildTextField(
+                  'Ingrese comentarios referente a la incidencia', false,
+                  (value) {
                 setState(() {
                   comentarios = value;
                   _checkComentarios();
                 });
-              },
-                  maxLines: 10,
-                  maxLength: 500),
+              }, maxLines: 10, maxLength: 500),
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.max,
                 children: [
-
                   ///galeria
-                 ElevatedButton.icon(
-  onPressed: () async {
-    final List<XFile>? imagenes =
-        await ImagePicker().pickMultiImage();
-    if (imagenes != null) {
-      for (var imagen in imagenes) {
-        final bytes = await imagen.readAsBytes();
-        final fotoBase64 = base64Encode(bytes);
-        print('Foto en base64: $fotoBase64');
-        setState(() {
-          fotosSeleccionadas.add(imagen);
-          fotosBase64List.add(fotoBase64);
-        });
-      }
-    }
-  },
-  icon: const Icon(
-    Icons.drive_folder_upload,
-    color: Colors.white,
-  ),
-  label: const Text(
-    'Seleccionar Fotos',
-    style: TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.bold,
-    ),
-  ),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.orange,
-  ),
-),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final List<XFile> imagenes =
+                          await ImagePicker().pickMultiImage();
+                      if (imagenes != null) {
+                        for (var imagen in imagenes) {
+                          final bytes = await imagen.readAsBytes();
+                          final fotoBase64 = base64Encode(bytes);
+                          print('Foto en base64: $fotoBase64');
+                          setState(() {
+                            fotosSeleccionadas.add(imagen);
+                            fotosBase64List.add(fotoBase64);
+                          });
+                        }
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.drive_folder_upload,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Seleccionar Fotos',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                    ),
+                  ),
 
                   const SizedBox(width: 10),
 
                   ///camara
                   ElevatedButton.icon(
                     onPressed: () async {
-                      final XFile? foto =
-                          await ImagePicker().pickImage(source: ImageSource.camera);
+                      final XFile? foto = await ImagePicker()
+                          .pickImage(source: ImageSource.camera);
                       if (foto != null) {
                         final bytes = await foto.readAsBytes();
                         final fotoBase64 = base64Encode(bytes);
@@ -316,7 +314,6 @@ class _VistaReporteState extends State<VistaReporte> {
                       backgroundColor: Colors.red,
                     ),
                   ),
-
                 ],
               ),
               const SizedBox(height: 10),
@@ -341,41 +338,36 @@ class _VistaReporteState extends State<VistaReporte> {
                               return Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Container(
-
-
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(10),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.grey.withOpacity(0.5),
-        spreadRadius: 5,
-        blurRadius: 7,
-        offset: const Offset(0, 3),
-      ),
-    ],
-  ),
-  child: GestureDetector(
-  onLongPress: () {
-    setState(() {
-      fotosSeleccionadas.removeAt(index);
-      fotosBase64List.removeAt(index);
-    });
-  },
-  child: AnimatedOpacity(
-    opacity: 1.0,
-    duration: Duration(seconds:2),
-    child: Image.file(
-      File(fotosSeleccionadas[index].path),
-      width: 100,
-      height: 100,
-      fit: BoxFit.cover,
-    ),
-  ),
-),
-
-),
-
-
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        spreadRadius: 5,
+                                        blurRadius: 7,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: GestureDetector(
+                                    onLongPress: () {
+                                      setState(() {
+                                        fotosSeleccionadas.removeAt(index);
+                                        fotosBase64List.removeAt(index);
+                                      });
+                                    },
+                                    child: AnimatedOpacity(
+                                      opacity: 1.0,
+                                      duration: Duration(seconds: 2),
+                                      child: Image.file(
+                                        File(fotosSeleccionadas[index].path),
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               );
                             },
                           ),
@@ -394,8 +386,8 @@ class _VistaReporteState extends State<VistaReporte> {
             backgroundColor: Colors.orange,
           ),
 
-        //onPressed: printtt,
-         onPressed: _isButtonEnabled ? activarReporte : null,
+          //onPressed: printtt,
+          onPressed: _isButtonEnabled ? activarReporte : null,
           child: const Text(
             'Completar reporte',
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -405,7 +397,8 @@ class _VistaReporteState extends State<VistaReporte> {
     );
   }
 
-  Widget _buildTextField(String labelText, bool isNumeric, Function(String) onChanged,
+  Widget _buildTextField(
+      String labelText, bool isNumeric, Function(String) onChanged,
       {int maxLines = 1, int maxLength = 100}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -427,8 +420,11 @@ class _VistaReporteState extends State<VistaReporte> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
             child: TextField(
-              keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-              inputFormatters: isNumeric ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9,]'))] : null,
+              keyboardType:
+                  isNumeric ? TextInputType.number : TextInputType.text,
+              inputFormatters: isNumeric
+                  ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9,]'))]
+                  : null,
               onChanged: onChanged,
               maxLines: maxLines,
               maxLength: maxLength,
@@ -439,7 +435,7 @@ class _VistaReporteState extends State<VistaReporte> {
             ),
           ),
         ),
-      ], 
+      ],
     );
   }
 }

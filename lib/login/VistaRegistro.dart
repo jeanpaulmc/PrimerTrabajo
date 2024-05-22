@@ -1,22 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:conduent/login/login_view.dart';
+import 'package:conduent/login/VistaLogin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:wakelock/wakelock.dart';
-
-
-
 
 class TipoEquipo {
   final String nombre;
   final String id;
   TipoEquipo({required this.nombre, required this.id});
 }
-
-
-
 
 class EnviarPersonal extends StatefulWidget {
   final String usuario;
@@ -34,12 +28,11 @@ class EnviarPersonal extends StatefulWidget {
   _EnviarPersonalState createState() => _EnviarPersonalState();
 }
 
-
-class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObserver {
- 
+class _EnviarPersonalState extends State<EnviarPersonal>
+    with WidgetsBindingObserver {
   // Crear un controlador para el campo de texto del emplazamiento
   late Timer _sessionTimer;
- 
+
   // Inicialmente asumimos que la pantalla está encendida
   bool _screenIsOn = true;
   List<TipoEquipo> equipoOptions = [];
@@ -66,7 +59,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   void dispose() {
     // Detener temporizador al cerrar el widget
     _sessionTimer.cancel();
-   
+
     WidgetsBinding.instance.removeObserver(this);
     emplazamientoController.dispose();
     // Llamar a la función para registrar la salida de la sesión
@@ -81,13 +74,13 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   }
 
   void _updateLoginIfNeeded() {
-    if(widget.userData.idTipoUsuario == '5' ||
-      widget.userData.idTipoUsuario == '6' ||
-      widget.userData.idTipoUsuario == '7'){
-        if (_screenIsOn) {
-          // La pantalla está encendida, realiza las acciones necesarias
-          updateLogin();
-        }
+    if (widget.userData.idTipoUsuario == '5' ||
+        widget.userData.idTipoUsuario == '6' ||
+        widget.userData.idTipoUsuario == '7') {
+      if (_screenIsOn) {
+        // La pantalla está encendida, realiza las acciones necesarias
+        updateLogin();
+      }
     }
   }
 
@@ -95,7 +88,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     print('State: $state');
-   
+
     switch (state) {
       case AppLifecycleState.inactive:
         _screenIsOn = true;
@@ -150,11 +143,11 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         setState(() {
-          equipoOptions = List<TipoEquipo>.from(data['result'].map((item) =>
-              TipoEquipo(
-                nombre: item['NOM_TIPO_UBICACION'].toString(),
-                id: item['ID_TIPO_UBICACION'].toString(),
-              )));
+          equipoOptions =
+              List<TipoEquipo>.from(data['result'].map((item) => TipoEquipo(
+                    nombre: item['NOM_TIPO_UBICACION'].toString(),
+                    id: item['ID_TIPO_UBICACION'].toString(),
+                  )));
         });
         print('Equipo seleccionado - ID: $selectedEquipoId');
       } else {
@@ -164,7 +157,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       print('Error: $error');
     }
   }
-
 
   // Función para verificar el emplazamiento
   // Api04
@@ -199,7 +191,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
             break;
           case "1":
             IdEmplazamiento = data['result']['ID_UBICACION'];
-            enviarRegistroIncidencia(); 
+            enviarRegistroIncidencia();
             break;
           default:
             mostrarError('Saliste de la App, vuelve a ingresar');
@@ -210,7 +202,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       print('Verificar emplazamiento!: $error');
     }
   }
-
 
   // Función para ver el tipo de incidencia
   // Api03
@@ -232,13 +223,14 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         setState(() {
-          incidenciaOptions = List<TipoEquipo>.from(data['result'].map((item) =>
-              TipoEquipo(
-                nombre: item['DESCRIPCION'].toString(),
-                id: item['ID_TIPO_INCIDENCIA'].toString(),
-              )));
+          incidenciaOptions =
+              List<TipoEquipo>.from(data['result'].map((item) => TipoEquipo(
+                    nombre: item['DESCRIPCION'].toString(),
+                    id: item['ID_TIPO_INCIDENCIA'].toString(),
+                  )));
           nombreIncidencia = incidenciaOptions;
-          List<String> nombresInci = nombreIncidencia.map((equipo) => equipo.nombre).toList();
+          List<String> nombresInci =
+              nombreIncidencia.map((equipo) => equipo.nombre).toList();
         });
         print('Estado: ${data['estado']}');
         print('Resultado: ${data['result']}');
@@ -274,12 +266,13 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
         print('Response enviar Registro Incidencia: ${response.body}');
         var data = json.decode(response.body);
         var estado = data['estado'];
-        if(estado == 1) {
+        if (estado == 1) {
           var result = data['result'];
           var incidenciaId = result['ID_INCIDENCIA'];
           print('El número de incidencia: $incidenciaId');
           String formattedIncidenciaId = incidenciaId.padLeft(8, '0');
-          registroCorrecto('Incidencia registrada con éxito. Código de Incidencia: $formattedIncidenciaId');
+          registroCorrecto(
+              'Incidencia registrada con éxito. Código de Incidencia: $formattedIncidenciaId');
         }
       } else {
         print('El emplazamiento no es válido');
@@ -289,9 +282,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
       mostrarError('Error en el registro de incidencia: $error');
     }
   }
-
-
-
 
   // Función para cerrar la sesión
   // Api06
@@ -387,138 +377,130 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     return WillPopScope(
       onWillPop: () async {
         if (widget.userData.idTipoUsuario == '8') {
-        Navigator.pop(context);
+          Navigator.pop(context);
         } else {
           // Muestra el diálogo para confirmar la salida de la aplicación
           return await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Salir de la aplicación'),
-                content: Text('¿Quieres salir de la aplicación?'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },
-                    child: Text('No'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      SystemNavigator.pop();
-                      enviarCerrarSeccion();
-                    },
-                    child: Text('Sí'),
-                  ),
-                ],
-              );
-            },
-          ) ?? false;
-
-
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Salir de la aplicación'),
+                    content: Text('¿Quieres salir de la aplicación?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(false);
+                        },
+                        child: Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          SystemNavigator.pop();
+                          enviarCerrarSeccion();
+                        },
+                        child: Text('Sí'),
+                      ),
+                    ],
+                  );
+                },
+              ) ??
+              false;
         }
         return false;
       },
-
-     child: Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Usuario: ${widget.userData.nombreUsuario}',
-                  style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold),
-                ),
-                const Text(
-                  'Registro de incidencia',
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Usuario: ${widget.userData.nombreUsuario}',
+                    style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const Text(
+                    'Registro de incidencia',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-      body: Center(
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 20),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-   
-
-
-                const SizedBox(height: 20),
-                // Selección de tipo de Equipo
-                const Text('1.- Tipo de Equipo'),
-                SizedBox(
-                  height: 60,
-                  width: double.infinity,
-                  child: Container(
-                    margin: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: DropdownButton<String>(
-                      value: selectedEquipoId ?? null,
-                      icon: Icon(Icons.arrow_drop_down),
-                      style:
-                          const TextStyle(color: Colors.black, fontSize: 13),
-                      underline: Container(
-                        height: 0,
-                        color: Colors.transparent,
+        body: Center(
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  // Selección de tipo de Equipo
+                  const Text('1.- Tipo de Equipo'),
+                  SizedBox(
+                    height: 60,
+                    width: double.infinity,
+                    child: Container(
+                      margin: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedEquipoId = newValue;
-                          selectedIncidenciaId = null;
-                          verIncidencia();
-                        });
-
-                      },
-                      items: [
-                        const DropdownMenuItem<String>(
-                          value: null,
-                          child: Center(child: Text('Seleccionar')),
+                      child: DropdownButton<String>(
+                        value: selectedEquipoId ?? null,
+                        icon: Icon(Icons.arrow_drop_down),
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 13),
+                        underline: Container(
+                          height: 0,
+                          color: Colors.transparent,
                         ),
-                        ...equipoOptions.map((TipoEquipo tipoEquipo) {
-                          return DropdownMenuItem<String>(
-                            value: tipoEquipo.id,
-                            child: Center(child: Text(tipoEquipo.nombre)),
-                          );
-                        }).toList(),
-                      ],
-                      dropdownColor: Colors.grey[200],
-                      elevation: 0,
-                      isExpanded: true,
-                      onTap: () {},
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedEquipoId = newValue;
+                            selectedIncidenciaId = null;
+                            verIncidencia();
+                          });
+                        },
+                        items: [
+                          const DropdownMenuItem<String>(
+                            value: null,
+                            child: Center(child: Text('Seleccionar')),
+                          ),
+                          ...equipoOptions.map((TipoEquipo tipoEquipo) {
+                            return DropdownMenuItem<String>(
+                              value: tipoEquipo.id,
+                              child: Center(child: Text(tipoEquipo.nombre)),
+                            );
+                          }).toList(),
+                        ],
+                        dropdownColor: Colors.grey[200],
+                        elevation: 0,
+                        isExpanded: true,
+                        onTap: () {},
+                      ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
-                // Selecionar Tipo Incidencia
-                const Text('2.- Tipo de Incidencia'),
-                SizedBox(
-                  height: 60,
-                  width: double.infinity,
-                  child: Container(
-                    margin: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Autocomplete<String>(
-                     
-                      optionsBuilder: (TextEditingValue textEditingValue) {
+                  const SizedBox(height: 20),
+                  // Selecionar Tipo Incidencia
+                  const Text('2.- Tipo de Incidencia'),
+                  SizedBox(
+                    height: 60,
+                    width: double.infinity,
+                    child: Container(
+                      margin: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
                         // Filtrar las opciones según lo que se haya escrito en el campo de texto
                         return incidenciaOptions
                             .where((option) => option.nombre
@@ -526,8 +508,7 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                                 .contains(textEditingValue.text.toLowerCase()))
                             .map((option) => option.nombre)
                             .toList();
-                      },
-                      onSelected: (String selected) {
+                      }, onSelected: (String selected) {
                         // Actualizar el valor seleccionado cuando se elige una opción del autocompletado
                         setState(() {
                           selectedIncidenciaId = incidenciaOptions
@@ -536,8 +517,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                         });
                         verIncidencia();
                       },
-                      // Decoración para el campo de autocompletado
-                      fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                          // Decoración para el campo de autocompletado
+                          fieldViewBuilder: (context, controller, focusNode,
+                              onEditingComplete) {
                         return TextField(
                           controller: controller,
                           focusNode: focusNode,
@@ -550,72 +532,72 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                               color: Colors.black,
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 15),
                           ),
                         );
-                      }
+                      }),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
-                // Digitar Emplazamiento
-                const Text('3.- Digite el emplazamiento del equipo'),
-                SizedBox(
-                  height: 60,
-                  width: double.infinity,
-                  child: Container(
-                    margin: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.white,
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: emplazamientoController,
-                      keyboardType: TextInputType.text,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle (fontSize: 13),
-                      decoration: const InputDecoration(
-                        hintText: 'Digite aquí',
-                        hintStyle: TextStyle(
-                          color: Colors.black,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  const SizedBox(height: 20),
+                  // Digitar Emplazamiento
+                  const Text('3.- Digite el emplazamiento del equipo'),
+                  SizedBox(
+                    height: 60,
+                    width: double.infinity,
+                    child: Container(
+                      margin: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.white,
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      onChanged: (_) => _verificarCondiciones(),
+                      child: TextField(
+                        controller: emplazamientoController,
+                        keyboardType: TextInputType.text,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 13),
+                        decoration: const InputDecoration(
+                          hintText: 'Digite aquí',
+                          hintStyle: TextStyle(
+                            color: Colors.black,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 15),
+                        ),
+                        onChanged: (_) => _verificarCondiciones(),
+                      ),
                     ),
                   ),
-                ),
 
-
-                ElevatedButton(
-                  onPressed: seccionHabilitada
-                      ? () {
-                          enviarRegistroIncidencia();
-                          verEmplazamineto();
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.orange,
+                  ElevatedButton(
+                    onPressed: seccionHabilitada
+                        ? () {
+                            enviarRegistroIncidencia();
+                            verEmplazamineto();
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.orange,
+                    ),
+                    child: const Text(
+                      'Enviar incidencia',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                  child: const Text(
-                    'Enviar incidencia',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),
@@ -644,7 +626,6 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
     );
   }
 
-
   // Función para mostrar diálogo de registro correcto
   void registroCorrecto(String mensaje) {
     showDialog(
@@ -662,15 +643,12 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
                 mostrarDialogoPregunta();
               },
               child: const Text('Aceptar'),
-
             )
           ],
         );
       },
     );
   }
-
-
 
   // Función para mostrar diálogo de pregunta
   void mostrarDialogoPregunta() {
@@ -714,14 +692,9 @@ class _EnviarPersonalState extends State<EnviarPersonal> with WidgetsBindingObse
               },
               child: const Text('No'),
             ),
-          ],  
+          ],
         );
       },
     );
   }
 }
-
-
-
-
-

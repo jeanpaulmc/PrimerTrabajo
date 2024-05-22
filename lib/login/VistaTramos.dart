@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'lista_view_mantenimiento.dart';
-import 'login_view.dart';
+import 'VistaListaIncidencias.dart';
+import 'VistaLogin.dart';
 
 class TipoTramo {
   final String nombre;
@@ -64,11 +64,11 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         setState(() {
-          tramoOptions = List<TipoTramo>.from(data['result'].map((item) =>
-              TipoTramo(
-                nombre: item['DESCRIPCION'].toString(),
-                id: item['ID_TRAMO'].toString(),
-              )));
+          tramoOptions =
+              List<TipoTramo>.from(data['result'].map((item) => TipoTramo(
+                    nombre: item['DESCRIPCION'].toString(),
+                    id: item['ID_TRAMO'].toString(),
+                  )));
           isLoading = false;
         });
       } else {
@@ -83,7 +83,8 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
     setState(() {
       selectedTramoId = newValue;
       nombreTramo = tramoOptions
-          .firstWhere((element) => element.id == newValue, orElse: () => TipoTramo(nombre: "", id: ""))
+          .firstWhere((element) => element.id == newValue,
+              orElse: () => TipoTramo(nombre: "", id: ""))
           .nombre;
       isButtonEnabled = newValue != null;
     });
@@ -122,7 +123,6 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
     }
   }
 
-
   // Función para cerrar la sesión
   Future<void> enviarCerrarSeccion() async {
     try {
@@ -138,18 +138,14 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
         }),
       );
 
-
       print('Response Cerrar Seccion Login: ${response.body}');
-
 
       var data = json.decode(response.body);
       var estado = data['estado'];
       var msj = data['msj'];
       var result = data['result'];
 
-
       print('Resultado 2: $result');
-
 
       switch (estado) {
         case 1:
@@ -175,7 +171,6 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
       mostrarError('Error al cerrar sesión: $error');
     }
   }
-
 
   void ingresarLista() {
     var idUsuario = widget.userData.idUsuario;
@@ -227,25 +222,26 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
     return WillPopScope(
       onWillPop: () async {
         return await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Salir de la aplicación'),
-            content: Text('¿Quieres salir de la aplicación?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text('No'),
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text('Salir de la aplicación'),
+                content: Text('¿Quieres salir de la aplicación?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('No'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      SystemNavigator.pop();
+                      enviarCerrarSeccion();
+                    },
+                    child: Text('Sí'),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: (){
-                  SystemNavigator.pop();
-                  enviarCerrarSeccion();
-                },
-                child: Text('Sí'),
-              ),
-            ],
-          ),
-        ) ?? false;
+            ) ??
+            false;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -274,8 +270,8 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
         body: Center(
           child: isLoading
               ? const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
-              ) 
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                )
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -292,7 +288,8 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
                         child: DropdownButton<String>(
                           value: selectedTramoId,
                           icon: const Icon(Icons.arrow_drop_down),
-                          style: const TextStyle(color: Colors.black, fontSize: 13),
+                          style: const TextStyle(
+                              color: Colors.black, fontSize: 13),
                           underline: Container(
                             height: 0,
                             color: Colors.transparent,
@@ -332,7 +329,6 @@ class _EnviarMantenimientoState extends State<EnviarMantenimiento>
                       ),
                     ),
                     const SizedBox(height: 20),
-
                   ],
                 ),
         ),

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:conduent/login/enviar_view_matenimiento.dart';
-import 'package:conduent/login/enviar_view_personal.dart';
+import 'package:conduent/login/VistaTramos.dart';
+import 'package:conduent/login/VistaRegistro.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -30,7 +30,7 @@ class UserData {
   UserData({
     required this.idUsuario,
     required this.nombreUsuario,
-    required this.idSeccion, 
+    required this.idSeccion,
     required this.idTipoUsuario,
   });
 }
@@ -62,7 +62,6 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
-  
   Future<void> _requestPermissions() async {
     // Solicitar permiso de cámara
     await Permission.camera.request();
@@ -87,14 +86,16 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _requestBackgroundActivityPermission() async {
-    bool isPermissionGranted = await isPermissionGrants(Permission.activityRecognition);
+    bool isPermissionGranted =
+        await isPermissionGrants(Permission.activityRecognition);
     if (!isPermissionGranted) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Permitir actividad en segundo plano'),
-            content: Text('¿Desea permitir que la aplicación acceda a la actividad en segundo plano?'),
+            title: const Text('Permitir actividad en segundo plano'),
+            content: const Text(
+                '¿Desea permitir que la aplicación acceda a la actividad en segundo plano?'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
@@ -117,14 +118,16 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _requestNotificationPermission() async {
-    bool isPermissionGranted = await isPermissionGrants(Permission.notification);
+    bool isPermissionGranted =
+        await isPermissionGrants(Permission.notification);
     if (!isPermissionGranted) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Permitir notificaciones'),
-            content: const Text('¿ Desea permitir que la aplicación envíe notificaciones?'),
+            content: const Text(
+                '¿ Desea permitir que la aplicación envíe notificaciones?'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
@@ -148,8 +151,8 @@ class _LoginViewState extends State<LoginView> {
 
   void _subscribeToActivityStream() {
     _activityStreamSubscription = activityRecognition.activityStream
-      .handleError(_handleError)
-      .listen(_onActivityReceive);
+        .handleError(_handleError)
+        .listen(_onActivityReceive);
   }
 
   void _handleError(Object error) {
@@ -187,11 +190,13 @@ class _LoginViewState extends State<LoginView> {
       },
     );
 
-    var url = Uri.parse('http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/validarLoginMovil');
+    var url = Uri.parse(
+        'http://200.37.244.149:8002/acsgestionequipos/ApiRestIncidencia/validarLoginMovil');
 
     String miContrasenia = contrasenia.text;
     var sha256Result = sha256.convert(utf8.encode(miContrasenia));
-    String contraseniaEncriptadaBase64 = base64.encode(utf8.encode(sha256Result.toString()));
+    String contraseniaEncriptadaBase64 =
+        base64.encode(utf8.encode(sha256Result.toString()));
 
     var body = {
       "usuario": usuario.text,
@@ -200,15 +205,17 @@ class _LoginViewState extends State<LoginView> {
 
     print('Body: $body');
 
-    var response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode(body),
-    ).timeout(const Duration(seconds: 20));
+    var response = await http
+        .post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode(body),
+        )
+        .timeout(const Duration(seconds: 20));
 
-    Navigator.of(context).pop(); // Ocultar el diálogo de inicio de sesión
+    Navigator.of(context).pop();
 
     if (response.statusCode == 200) {
       var data = json.decode(response.body);
@@ -236,7 +243,9 @@ class _LoginViewState extends State<LoginView> {
           idTipoUsuario: idTipoUsuario,
         );
 
-        if (idTipoUsuario == '5' || idTipoUsuario == '6' || idTipoUsuario == '7') {
+        if (idTipoUsuario == '5' ||
+            idTipoUsuario == '6' ||
+            idTipoUsuario == '7') {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -252,7 +261,7 @@ class _LoginViewState extends State<LoginView> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EnviarMantenimiento(    
+              builder: (context) => EnviarMantenimiento(
                 userData: userData,
                 usuario: usuario.text,
                 contrasenia: contrasenia.text,
@@ -314,13 +323,12 @@ class _LoginViewState extends State<LoginView> {
                     bottom: 5,
                   ),
                   child: AppBar(
-  title: const Text(
-    'Bienvenido al registro de seguimiento',
-    style: TextStyle(fontSize: 18),
-  ),
-  centerTitle: true, 
-    ),
-
+                    title: const Text(
+                      'Bienvenido al registro de seguimiento',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    centerTitle: true,
+                  ),
                 ),
                 SizedBox(height: 15),
                 Container(
@@ -392,7 +400,8 @@ class _LoginViewState extends State<LoginView> {
                   width: 400,
                   child: ElevatedButton(
                     onPressed: () {
-                      if (usuario.text.isNotEmpty && contrasenia.text.isNotEmpty) {
+                      if (usuario.text.isNotEmpty &&
+                          contrasenia.text.isNotEmpty) {
                         ingresar();
                       } else {
                         mostrarError('Por favor, ingrese usuario y contraseña');
@@ -408,6 +417,8 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                 ),
+                SizedBox(height: 50),
+                Text('v. 1.0', style: TextStyle(fontSize: 15)),
               ],
             ),
           ),
@@ -423,7 +434,9 @@ class _LoginViewState extends State<LoginView> {
           _isSecurePassword = !_isSecurePassword;
         });
       },
-      icon: _isSecurePassword ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
+      icon: _isSecurePassword
+          ? const Icon(Icons.visibility)
+          : const Icon(Icons.visibility_off),
       color: Colors.grey,
     );
   }
