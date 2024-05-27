@@ -53,6 +53,7 @@ dependencies:
   page_transition: ^2.1.0
   image: ^4.1.7
   flutter_image_compress: ^2.2.0
+  face_camera: ^0.1.0
 
 
 

@@ -10,6 +10,11 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_activity_recognition/flutter_activity_recognition.dart';
 
+// Patios
+import 'package:conduent/patios/tecnicos/verificarCara.dart';
+import 'package:conduent/patios/conductor/VistaGuiasdeTrabajo.dart';
+
+
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
 
@@ -257,7 +262,7 @@ class _LoginViewState extends State<LoginView> {
             ),
           );
           ///// CAMBIAR ADMIN  || idTipoUsuario == '1'
-        } else if (idTipoUsuario == '8' || idTipoUsuario == '1') {
+        } else if (idTipoUsuario == '8') {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -268,7 +273,31 @@ class _LoginViewState extends State<LoginView> {
               ),
             ),
           );
+        } else if(idTipoUsuario == '10'){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EnviarTecnico(
+                userData: userData,
+                usuario: usuario.text,
+                contrasenia: contrasenia.text,
+              ),
+            ),
+          );
+        } 
+          if (idTipoUsuario == '13') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EnviarConductor(
+                userData: userData,
+                usuario: usuario.text,
+                contrasenia: contrasenia.text,
+              ),
+            ),
+          );
         }
+
       } else {
         // Error en el inicio de sesión
         mostrarError('Usuario o contraseña incorrectas.');
